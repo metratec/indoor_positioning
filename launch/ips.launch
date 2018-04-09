@@ -1,0 +1,9 @@
+<launch>
+
+    <!-- launch the IPS receiver node that publishes its raw data to the ips/receiver/raw topic -->
+    <node pkg="ros_ips" name="receiver" type="receiver.py">
+        <param name="port" type="string" value="/dev/ttyUSB0"/>
+    </node>
+
+
+</launch>
