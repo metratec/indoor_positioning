@@ -19,6 +19,7 @@ from std_msgs.msg import String
 from ros_ips.serial_com import USBRead
 
 
+# TODO String -> StringStamped
 class IPSReceiver:
     """
     Use this class to establish a connection with the metraTec IPS receiver USB stick and publish the received

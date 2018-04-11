@@ -10,18 +10,43 @@
 #   position: 1 2 3         # position of the beacon in your environment, specified by X Y Z values, default: 0 0 0
 #   frame_id: map           # name of the coordinate frame the position is related to, default: map
 
-# example beacon
-beacon0:
-  EID: 0123456789ABCDEF
-  name: beaconname
-  zone: zone0
-  frame_id: map
-  position: 1 1 1
 
-# example zone
+#zone0:
+#  name: zonename
+#  frame_id: map
+#  polygon: [x1, y1, z1,
+#            x2, y2, z2,
+#            x3, y3, z3]
+#  beacon0:
+#    EID: 0123456789ABCDEF
+#    position: x y z
+#  beacon1:
+#    EID: 0123456789ABCDEF
+#    position: x y z
+
+
 zone0:
-  name: zonename
+  name: right
   frame_id: map
-  polygon: [x1, y1, z1,
-            x2, y2, z2,
-            x3, y3, z3]
+  polygon: [0, 0, 0,
+            0, 2, 0,
+            2, 2, 0]
+  beacon0:
+    EID: 0123456789ABCDEF
+    position: [0, 0, 0]
+  beacon1:
+    EID: 0123456789ABCDFF
+    position: [2, 2, 0]
+
+zone1:
+  name: left
+  frame_id: map
+  polygon: [0, 0, 0,
+            0, -2, 0,
+            -2, -2, 0]
+  beacon0:
+    EID: 0123456789ABCFFF
+    position: [0, 0, 0]
+  beacon1:
+    EID: 0123456789ABFFFF
+    position: [-2, -2, 0]
