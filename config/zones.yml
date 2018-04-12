@@ -32,11 +32,8 @@ zone0:
             0, 2, 0,
             2, 2, 0]
   beacon0:
-    EID: 0123456789ABCDEF
+    EID: 00124B00050CEB5A
     position: [0, 0, 0]
-  beacon1:
-    EID: 0123456789ABCDFF
-    position: [2, 2, 0]
 
 zone1:
   name: left
@@ -45,8 +42,5 @@ zone1:
             0, -2, 0,
             -2, -2, 0]
   beacon0:
-    EID: 0123456789ABCFFF
+    EID: 00124B00050CF989
     position: [0, 0, 0]
-  beacon1:
-    EID: 0123456789ABFFFF
-    position: [-2, -2, 0]

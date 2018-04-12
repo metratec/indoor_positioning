@@ -83,6 +83,9 @@ class Positioning:
         ordered_values = dict()
         # loop through every entry in the list of received pings
         for p in pings:
+            # remove end of line character
+            if p[-1] == '\r':
+                p = p[:-1]
             # split string on every SPACE
             split = p.split(' ')
             # check whether values are valid and skip current entry if they are not
@@ -99,14 +102,15 @@ class Positioning:
         for o in ordered_values:
             ordered_values[o] = sum(ordered_values[o]) / len(ordered_values[o])
         # return mean RSSI values attached to their respective EIDs
+        print(ordered_values)
         return ordered_values
 
 
 if __name__ == '__main__':
     # testing the class and its methods
-    p = Positioning('/home/metratec/catkin_ws/src/ros_ips/config/zones.yml')
+    pos = Positioning('/home/metratec/catkin_ws/src/ros_ips/config/zones.yml')
     dummy_pings = ['BCN 0123456789ABCDEF -060', 'BCN 0123456789ABCDEF -070', 'BCN 0123456789ABCDFF -070',
                    'BCN 0123456789ABCDFF -090', 'BCN 0123456789ABCFFF -070', 'BCN 0123456789ABCFFF -050',
                    'BCN 0123456789ABFFFF -070', 'BCN 0123456789ABFFFF -060', 'BCN 0123456789ABFFFF -090']
-    zone = p.get_zone(dummy_pings)
+    zone = pos.get_zone(dummy_pings)
     breakpoint = 0

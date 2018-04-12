@@ -16,6 +16,7 @@ Running from a launch file:
 import rospy
 import sys
 from std_msgs.msg import String
+from ros_ips.msg import StringStamped
 from ros_ips.serial_com import USBRead
 
 
@@ -34,7 +35,7 @@ class IPSReceiver:
         # initialize serial connection with USB stick
         self.usb = USBRead(port)
         # initialize publisher object
-        self.rec_pub = rospy.Publisher('ips/receiver/raw', String, queue_size=1)
+        self.rec_pub = rospy.Publisher('ips/receiver/raw', StringStamped, queue_size=1)
         # specify publishing rate
         self.rate = rospy.Rate(30)
 
@@ -43,8 +44,12 @@ class IPSReceiver:
         while not rospy.is_shutdown():
             # get a single receiver message
             line = self.usb.get_line()
-            # publish line as String message
-            self.rec_pub.publish(str(line))
+            # generate message
+            msg = StringStamped()
+            msg.header.stamp = rospy.Time.now()
+            msg.data = str(line)
+            # publish line as String message with timestamp
+            self.rec_pub.publish(msg)
             # wait according to publishing rate
             self.rate.sleep()
 
