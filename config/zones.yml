@@ -14,6 +14,7 @@
 #zone0:
 #  name: zonename
 #  frame_id: map
+#  threshold: -127
 #  polygon: [x1, y1, z1,
 #            x2, y2, z2,
 #            x3, y3, z3]
@@ -28,6 +29,7 @@
 zone0:
   name: right
   frame_id: map
+  threshold: -50
   polygon: [0, 0, 0,
             0, 2, 0,
             2, 2, 0]
@@ -38,6 +40,7 @@ zone0:
 zone1:
   name: left
   frame_id: map
+  threshold: -50
   polygon: [0, 0, 0,
             0, -2, 0,
             -2, -2, 0]

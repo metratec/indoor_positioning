@@ -15,7 +15,6 @@ Running from a launch file:
 
 import rospy
 import sys
-from std_msgs.msg import String
 from ros_ips.msg import StringStamped
 from ros_ips.serial_com import USBRead
 

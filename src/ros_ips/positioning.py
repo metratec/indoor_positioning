@@ -40,14 +40,18 @@ class Positioning:
             # get content of all zones in yml file and append to zones list
             z = 'zone' + str(i)  # dictionary keys for each zone (zone0, zone1, zone2, etc.)
             zone = yml[z]  # content of current zone
+            # get polygon of current zone
+            poly = []
+            for j in range(0, len(zone['polygon']), 3):
+                poly.append([zone['polygon'][j], zone['polygon'][j+1], zone['polygon'][j+2]])
             # get content of all beacons of current zone from beacon0, beacon1, beacon2, etc.
             beacons = []
-            for k in range(len(zone)-3):  # -3 because of non-beacon entries (name, frame_id, polygon)
+            for k in range(len(zone)-4):  # -3 because of non-beacon entries (name, frame_id, polygon)
                 b = 'beacon' + str(k)  # dictionary keys for each beacon inside the zone
                 beacon = zone[b]  # content of current beacon
                 beacons.append(Beacon(beacon['EID'], beacon['position']))  # initialize Beacon object
             # append information about current zone to list and start with next iteration if more zones are defined
-            self.zones.append(Zone(zone['name'], zone['frame_id'], zone['polygon'], beacons))
+            self.zones.append(Zone(zone['name'], zone['frame_id'], zone['threshold'], poly, beacons))
 
     def get_zone(self, pings):
         """
@@ -63,6 +67,9 @@ class Positioning:
         for key, value in sorted(means.items(), key=lambda (k, v): v, reverse=True):
             # look for key (EID) in every zone and return when match is found
             for z in self.zones:  # iterate over zones
+                # continue to next zone if mean RSSI value is lower than the configured threshold
+                if value < z.threshold:
+                    continue
                 for b in z.beacons:  # iterate over beacons inside the zone
                     if b.eid == key:  # if the EID of the beacon is the same as the current key (EID) return the zone
                         return z

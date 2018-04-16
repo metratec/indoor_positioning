@@ -5,7 +5,7 @@ DESCRIPTION
 
 import rospy
 import os
-from std_msgs.msg import String
+from geometry_msgs.msg import PolygonStamped, Point32
 from ros_ips.msg import StringStamped
 from ros_ips.positioning import Positioning
 
@@ -22,6 +22,8 @@ class IPS:
         self.buffer_length = 6
         # list of incoming messages
         self.msg_buffer = []
+        # timestamp from last received message
+        self.last_time = None
 
         # initialize positioning class
         config_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config/zones.yml')
@@ -29,7 +31,9 @@ class IPS:
 
         # publishers
         # current zone name
-        self.zone_name_pub = rospy.Publisher('ips/receiver/current_zone/name', String, queue_size=1)
+        self.zone_name_pub = rospy.Publisher('ips/receiver/current_zone/name', StringStamped, queue_size=1)
+        # polygon of current zone
+        self.zone_polygon_pub = rospy.Publisher('ips/receiver/current_zone/polygon', PolygonStamped, queue_size=1)
         # set publishing rate
         self.rate = rospy.Rate(1)
 
@@ -40,6 +44,8 @@ class IPS:
         """
         # append message to buffer
         self.msg_buffer.append(msg.data)
+        # save time of last raw signal
+        self.last_time = msg.header.stamp
         # delete oldest message if buffer is full
         if len(self.msg_buffer) > self.buffer_length:
             del(self.msg_buffer[0])
@@ -47,9 +53,24 @@ class IPS:
     def publish(self):
         """Publish zone information"""
         while not rospy.is_shutdown():
+            # get the current zone
             zone = self.positioning.get_zone(self.msg_buffer) if self.msg_buffer else None
             if zone is not None:
-                self.zone_name_pub.publish(zone.name)
+                # publish zone name
+                name = StringStamped()
+                name.header.stamp = rospy.Time.now()
+                name.header.frame_id = zone.frame_id
+                name.data = zone.name
+                self.zone_name_pub.publish(name)
+                # publish zone polygon
+                polygon = PolygonStamped()
+                polygon.header.stamp = self.last_time
+                polygon.header.frame_id = 'map'
+                points = []
+                for p in zone.polygon:
+                    points.append(Point32(p[0], p[1], p[2]))
+                polygon.polygon.points = points
+                self.zone_polygon_pub.publish(polygon)
             # wait to start next iteration
             self.rate.sleep()
 
