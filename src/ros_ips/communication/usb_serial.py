@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-"""Use the USBRead class to establish a serial connection with a compatible device via USB port."""
+"""Use the USBSerial class to establish a serial connection with a compatible device via USB port."""
 
 from __future__ import print_function
 import serial
 
 
 # TODO use threading for serial connection via USB??
-class USBRead:
+class USBSerial:
     """Establish a serial connection with a connected USB device."""
     def __init__(self, port, baudrate=115200):
         """
-        Initialize reader class for serial connection.
+        Initialize class for serial connection.
         :param port: String: USB port the device is connected to
-        :param baudrate: Int: Baudrate to use for the communication with the USB device
+        :param baudrate (default=115200): Int: Baudrate to use for the communication with the USB device
         """
         # port of the device
         self.port = port
@@ -35,18 +35,29 @@ class USBRead:
         try:
             self.ser.close()
         except:
-            print ('Unable to close serial connection with: ' + self.port)
+            print('Unable to close serial connection with: ' + self.port)
 
-    def get_line(self):
+    def send(self, msg):
         """
-        Return a single line from the serial messages with b'\r' as the end-of-line-character.
+        Send serial message over the established connection.
+        :param msg: String: message to be sent over serial connection
+        """
+        try:
+            self.ser.write(msg)
+        except:
+            print('Unable to send message over serial connection.')
+
+    def get_line(self, eol_character):
+        """
+        Return a single line from the serial messages with a custom end-of-line character.
+        :param eol_character: Bytes: character or sequence to use as end-of-line character.
         :return: Bytes: the most recent line that has been sent via the serial connection
         """
         # check whether port is open
         if not self.ser.isOpen():
             self.open()
         # define end-of-line-character
-        eol = b'\r'
+        eol = eol_character
         # determine length of the eol-character
         leneol = len(eol)
         # initialize empty line as bytearray

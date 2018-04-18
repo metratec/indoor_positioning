@@ -16,7 +16,7 @@ class IPS:
     """
     def __init__(self):
         # subscribe to raw messages from USB stick
-        self.beacon_sub = rospy.Subscriber('ips/receiver/raw', StringStamped, self.callback)
+        self.receiver_sub = rospy.Subscriber('ips/receiver/raw', StringStamped, self.callback)
 
         # number of messages to keep
         self.buffer_length = 4  # TODO make configurable
