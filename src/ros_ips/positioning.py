@@ -25,6 +25,14 @@ class Positioning:
         self.zones = []
         self.parse_config(config_dir)
 
+    def get_beacon(self, eid):
+        """
+        Return beacon object with the specified EID.
+        :param eid: String: EID of the beacon object that should be fetched from the initialized zones
+        :return:
+        """
+        pass
+
     def parse_config(self, yml_dir):
         """
         Read the YAML config files of zones, parse the data and create zone/beacon objects. The created zone objects

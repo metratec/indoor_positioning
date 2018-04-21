@@ -6,24 +6,18 @@ DESCRIPTION
 from positioning import Positioning
 
 
-class PositioningPlus:
+class PositioningPlus(Positioning):
     def __init__(self, config_dir):
-        self.pos = Positioning(config_dir)
-
-    def get_zone(self, pings):
-        return self.pos.get_zone(pings)
-
-    def get_mean(self, pings):
-        return self.pos.get_mean(pings)
+        Positioning.__init__(self, config_dir)
 
     def get_top_beacons(self, pings, n):
-        means = self.pos.get_mean(pings)
+        means = self.get_mean(pings)
         ret = []
         # sort mean dictionary by values and return n beacons with the highest signal strength that are configured in
         # the config-file and meet the threshold criteria
         for key, value in sorted(means.items(), key=lambda (k, v): v, reverse=True):
             # look for key (EID) in every zone and return when match is found
-            for z in self.pos.zones:  # iterate over zones
+            for z in self.zones:  # iterate over zones
                 # continue to next zone if mean RSSI value is lower than the configured threshold
                 if value < z.threshold:
                     continue
@@ -33,6 +27,9 @@ class PositioningPlus:
                         if len(ret) >= n:  # TODO continue with next key-value-pair when was found
                             return ret
         return ret
+
+    def get_range(self, responses):
+        pass
 
 
 if __name__ == '__main__':
