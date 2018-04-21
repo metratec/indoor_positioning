@@ -26,24 +26,49 @@
 #    position: x y z
 
 
+# zone0:
+#  name: right
+#  frame_id: map
+#  threshold: -50
+#  polygon: [0, 0, 0,
+#            0, 2, 0,
+#            2, 2, 0]
+#  beacon0:
+#    EID: 00124B00050CEB5A
+#    position: [0, 0, 0]
+#
+#zone1:
+#  name: left
+#  frame_id: map
+#  threshold: -50
+#  polygon: [0, 0, 0,
+#            0, -2, 0,
+#            -2, -2, 0]
+#  beacon0:
+#    EID: 00124B00050CF989
+#    position: [0, 0, 0]
+
 zone0:
   name: right
   frame_id: map
-  threshold: -50
+  threshold: -100
   polygon: [0, 0, 0,
             0, 2, 0,
             2, 2, 0]
   beacon0:
-    EID: 00124B00050CEB5A
+    EID: 00124B00090593E6
     position: [0, 0, 0]
 
 zone1:
   name: left
   frame_id: map
-  threshold: -50
+  threshold: -100
   polygon: [0, 0, 0,
             0, -2, 0,
             -2, -2, 0]
   beacon0:
-    EID: 00124B00050CF989
+    EID: 00124B00050CD41E
+    position: [0, 0, 0]
+  beacon1:
+    EID: 00124B00050CDA71
     position: [0, 0, 0]

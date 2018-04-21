@@ -54,7 +54,7 @@ class IPSReceiver:
         # initialize subscriber that listens to ips/receiver/send to send messages to the receiver on callback
         self.rec_send_sub = rospy.Subscriber('ips/receiver/send', String, self.callback)
         # initialize publisher object
-        self.rec_pub = rospy.Publisher('ips/receiver/raw', StringStamped, queue_size=1)
+        self.rec_pub = rospy.Publisher('ips/receiver/raw', StringStamped, queue_size=10)
         # specify publishing rate
         self.rate = rospy.Rate(30)
 
@@ -64,6 +64,8 @@ class IPSReceiver:
         :param msg: String: message to be sent to the connected device
         """
         self.con.send(msg.data)
+        print(msg.data)
+        # rospy.sleep(0.5)
 
     def publish(self):
         """Publish raw receiver messages to the ips/receiver/raw topic."""
