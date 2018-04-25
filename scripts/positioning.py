@@ -104,7 +104,7 @@ class IPS:
 
 if __name__ == '__main__':
     # start node
-    rospy.init_node('positioning', anonymous=True)
+    rospy.init_node('positioning', anonymous=False)
     # initialize IPSReceiver class
     ips = IPS()
     try:

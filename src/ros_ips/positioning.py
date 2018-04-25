@@ -21,6 +21,8 @@ class Positioning:
         Initialize class object by passing the directory to a YAML config file containing zone information.
         :param config_dir: String: directory of the YAML config file containing the definitions of zones
         """
+        # store number of specified beacons
+        self.n_beacons = 0
         # get data from config file and initialize zone objects
         self.zones = []
         self.parse_config(config_dir)
@@ -64,6 +66,8 @@ class Positioning:
                 b = 'beacon' + str(k)  # dictionary keys for each beacon inside the zone
                 beacon = zone[b]  # content of current beacon
                 beacons.append(Beacon(beacon['EID'], beacon['position'], zone['frame_id']))  # initialize Beacon object
+                # increment number of beacons
+                self.n_beacons += 1
             # append information about current zone to list and start with next iteration if more zones are defined
             self.zones.append(Zone(zone['name'], zone['frame_id'], zone['threshold'], poly, beacons))
 

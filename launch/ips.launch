@@ -5,8 +5,8 @@
     paramters:
         <param name="host" type="string" value="192.168.2.223"/>
         <param name="host" type="string" value="/dev/ttyUSB0"/>
-        <param name="port" type="int" value=10001/>
-        <param name="baudrate" type="int" value=115200/>
+        <param name="port" type="int" value="10001"/>
+        <param name="baudrate" type="int" value="115200"/>
     -->
     <node pkg="ros_ips" name="receiver" type="receiver.py">
         <param name="host" type="string" value="192.168.2.223"/>
@@ -14,7 +14,11 @@
 
     <!-- launch IPSplus node for UWB position estimation -->
     <node pkg="ros_ips" name="positioning_plus" type="positioning_plus.py" >
+        <param name="config_file" type="string" value="config/zones.yml" />
         <param name="frame_id" type="string" value="map" />
+        <param name="rate" type="double" value="0.1" />
+        <param name="bcn_len" type="int" value="6" />
+        <param name="srg_len" type="int" value="3" />
     </node>
 
     <!-- static tf broadcasters to establish connection between coordinate frames -->

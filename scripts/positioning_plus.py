@@ -1,8 +1,31 @@
 #!/usr/bin/env python
 """
-DESCRIPTION
-queue_size should probably be at least equal to number of beacons
-buffer_length should probably be at least 2x number of beacons
+Use this node to perform indoor positioning using the metraTec IPS+ tracking system. Prerequisites for using this node
+is a running receiver-node that handles communication with the receiver and thus with the beacons in the vicinity.
+Also, make sure that tf is broadcasting transformations between all the different coordinate frames used in the config
+file and the coordinate frame of the receiver (which is specified via rosparam, see below).
+
+Subscribed topics:
+    - ips/receiver/raw (ros_ips/StringStamped):
+        Raw messages received by the UWB receiver
+
+Published topics:
+    - ips/receiver/send (std_msgs/String):
+        Message to be sent to the receiver, e.g. 'SRG <EID> \r' ranging request
+    - ips/receiver/position (geometry_msgs/PointStamped):
+        Estimated position of the receiver after UWB ranging and trilateration
+
+Parameters:
+    - ~config_file (string, default='config/zones.yml'):
+        Path to the configuration file of zones and beacons relative to the package directory
+    - ~frame_id (string, default='map'):
+        Coordinate frame the receiver position should be estimated in
+    - ~rate (double, default=0.1):
+        The publishing rate in messages per second
+    - ~bcn_len (int, default=2*number_of_beacons):
+        Buffer length for BCN messages
+    - ~srg_len (int, default=number_of_beacons):
+        Buffer length for SRG messages
 """
 
 import os
@@ -15,23 +38,42 @@ from ros_ips.positioning_plus import PositioningPlus
 
 
 class IPSplus:
+    """
+    Configure ROS node for metraTec IPS+ indoor positioning system with UWB ranging functionality.
+    """
+    # parameters specifying wait for SRG responses and timeout to avoid infinite wait for SRG response
+    srg_sleep = 0.1  # interval in which to check for responses in secons
+    srg_timeout = 10  # number of times to check for responses. After that, continue with next beacon
+
     def __init__(self):
+        """
+        Initialize instance variables with values from ROS parameter server (or default values) and zone/beacon
+        configuration from YAML file.
+        """
+        # get directory of config file
+        config_dir = rospy.get_param('~config_file') if rospy.has_param('~config_file') else 'config/zones.yml'
+        abs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_dir)
+        # initialize positioning class
+        self.positioning = PositioningPlus(abs_dir)
+        # get number of beacons specified in zones.yml file for default buffer values
+        n_beacons = self.positioning.n_beacons
+
         # publisher for estimated position of UWB trilateration
         self.position_pub = rospy.Publisher('ips/receiver/position', PointStamped, queue_size=1)
         # publisher for serial messages to be sent to the receiver
-        self.receiver_send_pub = rospy.Publisher('ips/receiver/send', String, queue_size=3)
+        self.receiver_send_pub = rospy.Publisher('ips/receiver/send', String, queue_size=n_beacons)
         # subscribe to raw messages of receiver
         self.receiver_sub = rospy.Subscriber('ips/receiver/raw', StringStamped, self.callback)
 
         # number of messages to keep
-        self.bcn_buffer_length = 6  # TODO make configurable
+        self.bcn_buffer_length = rospy.get_param('~bcn_len') if rospy.has_param('~bcn_len') else 2*n_beacons
         # list of incoming messages
         self.bcn_buffer = []
         # timestamp from last received message
         self.bcn_last_time = None
 
         # number of messages to keep
-        self.srg_buffer_length = 3  # TODO make configurable
+        self.srg_buffer_length = rospy.get_param('~srg_len') if rospy.has_param('srg_len') else n_beacons
         # list of incoming messages
         self.srg_buffer = []
         # timestamp from last received message
@@ -44,18 +86,16 @@ class IPSplus:
         # get map frame to do positioning in from parameter server. Defaults to "map" if not specified
         self.frame_id = rospy.get_param('~frame_id') if rospy.has_param('~frame_id') else 'map'
 
-        # initialize positioning class
-        config_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config/zones.yml')
-        self.positioning = PositioningPlus(config_dir)
-
         # set publishing rate
-        self.rate = rospy.Rate(0.1)
+        self.rate = rospy.Rate(rospy.get_param('~rate')) if rospy.has_param('~rate') else rospy.Rate(0.1)
 
     def callback(self, msg):
         """
-        Append incoming messages to list of previous messages.
+        Append incoming messages to list of previous message. Differentiate between BCN messages (regular beacon pings)
+        and SRG messages (responses of UWB ranging responses)
         :param msg: String, message of subscribed topic
         """
+        # sort message and add to buffer depending on prefix of the message
         if msg.data.split(' ')[0] == 'BCN':
             buff_len = self.bcn_buffer_length
             buff = self.bcn_buffer
@@ -65,7 +105,6 @@ class IPSplus:
             buff = self.srg_buffer
             self.srg_last_time = msg.header.stamp
             self.srg_wait = False
-            # TODO handle exceptions like TOE etc.
         else:
             return
         # append message to buffer
@@ -73,9 +112,9 @@ class IPSplus:
         # delete oldest message if buffer is full
         if len(buff) > buff_len:
             del(buff[0])
-        # TODO docs
 
     def publish(self):
+        """Publish the estimated position of the receiver"""
         while not rospy.is_shutdown():
             # estimate current position
             position = self.estimate_position()
@@ -89,17 +128,30 @@ class IPSplus:
             self.rate.sleep()
 
     def estimate_position(self):
+        """
+        Estimate the position of the receiver using UWB ranging responses.
+        :return: [Float, Float, Float]: estimated position of the UWB receiver [x, y, z]
+        """
         while not rospy.is_shutdown():
             # get all beacons in range
             beacons = self.positioning.get_mean(self.bcn_buffer)
             # send ranging request to all beacons
+            iters = 0
             for b in beacons:
                 request = 'SRG ' + b + '\r'
                 self.receiver_send_pub.publish(request)
                 self.srg_wait = True
                 # wait until SRG response arrives
                 while self.srg_wait:
-                    rospy.sleep(0.1)
+                    # stop waiting after a specific amount of iterations to avoid infinite loop
+                    if iters >= self.srg_timeout:
+                        break
+                    # wait for SRG response
+                    rospy.sleep(self.srg_sleep)
+                    # increment number of iterations
+                    iters += 1
+                # reset number of iterations for next beacon
+                iters = 0
             # get ranges for all SRG responses
             ranges = self.positioning.parse_srg(self.srg_buffer)
             # transform beacon positions into frame specified by self.frame_id (~frame_id)
@@ -125,12 +177,17 @@ class IPSplus:
                         continue
                 else:
                     transformed_ranges.append((r[0].position, r[1]))
-            return self.positioning.trilaterate(transformed_ranges)
+            # estimate position
+            position = self.positioning.trilaterate(transformed_ranges)
+            # clear SRG message buffer
+            self.srg_buffer = []
+            # return estimated position
+            return position
 
 
 if __name__ == '__main__':
     # start node
-    rospy.init_node('positioning_plus', anonymous=True)
+    rospy.init_node('positioning_plus', anonymous=False)
     # initialize IPSReceiver class
     ips = IPSplus()
     try:
