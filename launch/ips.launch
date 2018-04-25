@@ -4,12 +4,20 @@
     launch the IPS receiver node that publishes its raw data to the ips/receiver/raw topic
     paramters:
         <param name="host" type="string" value="192.168.2.223"/>
+        <param name="host" type="string" value="/dev/ttyUSB0"/>
         <param name="port" type="int" value=10001/>
         <param name="baudrate" type="int" value=115200/>
     -->
     <node pkg="ros_ips" name="receiver" type="receiver.py">
-        <param name="host" type="string" value="/dev/ttyUSB0"/>
-    </node
+        <param name="host" type="string" value="192.168.2.223"/>
+    </node>
 
+    <!-- launch IPSplus node for UWB position estimation -->
+    <node pkg="ros_ips" name="positioning_plus" type="positioning_plus.py" >
+        <param name="frame_id" type="string" value="map" />
+    </node>
+
+    <!-- static tf broadcasters to establish connection between coordinate frames -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="basement_to_map_transform" args="0 0 5. 0 0 0.707 0.707 map basement" />
 
 </launch>

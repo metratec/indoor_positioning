@@ -29,9 +29,15 @@ class Positioning:
         """
         Return beacon object with the specified EID.
         :param eid: String: EID of the beacon object that should be fetched from the initialized zones
-        :return:
+        :return: Beacon/None: beacon object with the specified EID
         """
-        pass
+        # iterate over all zones and search for beacon
+        for z in self.zones:
+            for b in z.beacons:
+                if b.eid == eid:
+                    return b
+        # return None if no matching beacon was found
+        return None
 
     def parse_config(self, yml_dir):
         """
@@ -54,10 +60,10 @@ class Positioning:
                 poly.append([zone['polygon'][j], zone['polygon'][j+1], zone['polygon'][j+2]])
             # get content of all beacons of current zone from beacon0, beacon1, beacon2, etc.
             beacons = []
-            for k in range(len(zone)-4):  # -3 because of non-beacon entries (name, frame_id, polygon)
+            for k in range(len(zone)-4):  # -4 because of non-beacon entries (name, frame_id, polygon)
                 b = 'beacon' + str(k)  # dictionary keys for each beacon inside the zone
                 beacon = zone[b]  # content of current beacon
-                beacons.append(Beacon(beacon['EID'], beacon['position']))  # initialize Beacon object
+                beacons.append(Beacon(beacon['EID'], beacon['position'], zone['frame_id']))  # initialize Beacon object
             # append information about current zone to list and start with next iteration if more zones are defined
             self.zones.append(Zone(zone['name'], zone['frame_id'], zone['threshold'], poly, beacons))
 

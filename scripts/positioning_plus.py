@@ -7,13 +7,17 @@ buffer_length should probably be at least 2x number of beacons
 
 import os
 import rospy
+import tf
 from std_msgs.msg import String
+from geometry_msgs.msg import PointStamped
 from ros_ips.msg import StringStamped
 from ros_ips.positioning_plus import PositioningPlus
 
 
 class IPSplus:
     def __init__(self):
+        # publisher for estimated position of UWB trilateration
+        self.position_pub = rospy.Publisher('ips/receiver/position', PointStamped, queue_size=1)
         # publisher for serial messages to be sent to the receiver
         self.receiver_send_pub = rospy.Publisher('ips/receiver/send', String, queue_size=3)
         # subscribe to raw messages of receiver
@@ -34,6 +38,11 @@ class IPSplus:
         self.srg_last_time = None
         # flag that is set when a SRG message is received
         self.srg_wait = True
+
+        # initialize tf transform listener
+        self.tf = tf.TransformListener()
+        # get map frame to do positioning in from parameter server. Defaults to "map" if not specified
+        self.frame_id = rospy.get_param('~frame_id') if rospy.has_param('~frame_id') else 'map'
 
         # initialize positioning class
         config_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config/zones.yml')
@@ -60,7 +69,6 @@ class IPSplus:
         else:
             return
         # append message to buffer
-        print(msg.data)
         buff.append(msg.data)
         # delete oldest message if buffer is full
         if len(buff) > buff_len:
@@ -69,18 +77,55 @@ class IPSplus:
 
     def publish(self):
         while not rospy.is_shutdown():
-            # get three beacons in range with the highest RSSI values
-            # beacons = self.positioning.get_top_beacons(self.msg_buffer, 3)  # TODO support more (or less) than 3 beacons
-            # get all the beacons in range
+            # estimate current position
+            position = self.estimate_position()
+            # publish estimated position
+            if position is not None and len(position) == 3:
+                point = PointStamped()
+                point.header.stamp = rospy.Time.now()
+                point.header.frame_id = self.frame_id
+                point.point.x, point.point.y, point.point.z = position[0], position[1], position[2]
+                self.position_pub.publish(point)
+            self.rate.sleep()
+
+    def estimate_position(self):
+        while not rospy.is_shutdown():
+            # get all beacons in range
             beacons = self.positioning.get_mean(self.bcn_buffer)
+            # send ranging request to all beacons
             for b in beacons:
                 request = 'SRG ' + b + '\r'
                 self.receiver_send_pub.publish(request)
                 self.srg_wait = True
+                # wait until SRG response arrives
                 while self.srg_wait:
                     rospy.sleep(0.1)
-
-            self.rate.sleep()
+            # get ranges for all SRG responses
+            ranges = self.positioning.parse_srg(self.srg_buffer)
+            # transform beacon positions into frame specified by self.frame_id (~frame_id)
+            transformed_ranges = []
+            for i, r in enumerate(ranges):
+                # skip points that are already in the correct frame
+                if r[0].frame_id != self.frame_id:
+                    # transform points into correct frame if tf knows the respective transform
+                    try:
+                        # look for transform from beacon frame to receiver frame
+                        (trans, rot) = self.tf.lookupTransform('/' + r[0].frame_id, '/' + self.frame_id, rospy.Time(0))
+                        # transform point
+                        tp = r[0].position[:]
+                        tp.append(0)
+                        tp = tf.transformations.quaternion_multiply(
+                            tf.transformations.quaternion_multiply(rot, tp),
+                            tf.transformations.quaternion_conjugate(rot)
+                        )
+                        tp = [tp[0]+trans[0], tp[1]+trans[1], tp[2]+trans[2]]
+                        transformed_ranges.append((tp, r[1]))
+                    except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                        print('Cannot transform {} into {}. Check your tf tree!'.format(r[0].frame_id, self.frame_id))
+                        continue
+                else:
+                    transformed_ranges.append((r[0].position, r[1]))
+            return self.positioning.trilaterate(transformed_ranges)
 
 
 if __name__ == '__main__':
