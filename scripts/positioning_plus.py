@@ -38,9 +38,7 @@ from ros_ips.positioning_plus import PositioningPlus
 
 
 class IPSplus:
-    """
-    Configure ROS node for metraTec IPS+ indoor positioning system with UWB ranging functionality.
-    """
+    """Configure ROS node for metraTec IPS+ indoor positioning system with UWB ranging functionality."""
     # parameters specifying wait for SRG responses and timeout to avoid infinite wait for SRG response
     srg_sleep = 0.1  # interval in which to check for responses in secons
     srg_timeout = 10  # number of times to check for responses. After that, continue with next beacon
