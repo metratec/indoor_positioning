@@ -4,7 +4,7 @@
     launch the IPS receiver node that publishes its raw data to the ips/receiver/raw topic
     paramters:
         <param name="host" type="string" value="192.168.2.223"/>
-        <param name="host" type="string" value="/dev/ttyUSB0"/>
+        <param name="port" type="string" value="/dev/ttyUSB0"/>
         <param name="port" type="int" value="10001"/>
         <param name="baudrate" type="int" value="115200"/>
     -->

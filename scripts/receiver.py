@@ -1,17 +1,30 @@
 #!/usr/bin/env python
-# TODO this is for USB and TCP now!!!
 """
-Use this node to establish a connection with the metraTec IPS receiver USB stick. You have to pass the USB port the
-stick is connected to as a command line argument or as a private parameter when you are using a launch file.
-Running from command line:
-    $ rosrun ros_ips receiver.py <PORT>
-    For example:
-    $ rosrun ros_ips receiver.py /dev/ttyUSB0
+Use this node to establish a connection with the metraTec IPS receiver or USB stick. You have to pass the USB port the
+stick is connected to or the IP address of the regular receiver as a command line argument or as a private parameter
+when you are using a launch file.
 
-Running from a launch file:
-    <node pkg="ros_ips" name="receiver" type="receiver.py">
-        <param name="port" type="string" value="/dev/ttyUSB0"/>
-    </node>
+Running from command line:
+    $ rosrun ros_ips receiver.py <TYPE> <REQUIRED> <OPTIONAL>
+    For example:
+    $ rosrun ros_ips receiver.py usb /dev/ttyUSB0
+    $ rosrun ros_ips receiver.py tcp 192.168.2.223
+
+Subscribed topics:
+    - ips/receiver/send (std_msgs/String):
+        Message to be sent over the TCP or serial connection to the IPS receiver or USB stick
+
+Published topics:
+    - ips/receiver/raw (ros_ips/StringStamped):
+        Raw messages received from the receiver or USB stick
+
+Parameters:
+    - ~host (string, default=None):
+        IP address of the connected receiver
+    - ~port (with host: int, default=10001; without host: string, default=None):
+        Port for the TCP connection if '~host' parameter is present, otherwise specifies the USB port of the stick
+    - ~baudrate (int, default=115200):
+        Baudrate to use for serial communication with USB receiver
 """
 
 from __future__ import print_function
@@ -23,11 +36,11 @@ from ros_ips.communication.usb_serial import USBSerial
 from ros_ips.communication.tcp_socket import TCPSocket
 
 
-# TODO String -> StringStamped
 class IPSReceiver:
     """
     Use this class to establish a connection with the metraTec IPS receiver or USB stick and publish the received
-    messages to the ips/receiver/raw topic.
+    messages to the ips/receiver/raw topic. The node also listens to the ips/receiver/send topic and invokes a
+    callback that forwards these messages to the connected receiver when it is updated.
     """
     def __init__(self, type, required, optional):
         """
@@ -44,9 +57,11 @@ class IPSReceiver:
         self.opt = optional
         # initialize serial connection with USB stick or TCP connection with standard receiver
         if self.type == 'usb':
-            self.con = USBSerial(self.req) if self.opt is None else USBSerial(self.req, baudrate=self.opt)
+            baudrate = self.opt if self.opt is not None else 115200
+            self.con = USBSerial(self.req) if self.opt is None else USBSerial(self.req, baudrate=baudrate)
         elif self.type == 'tcp':
-            self.con = TCPSocket(self.req) if self.opt is None else TCPSocket(self.req, port=self.opt)
+            port = self.opt if self.opt is not None else 10001
+            self.con = TCPSocket(self.req) if self.opt is None else TCPSocket(self.req, port=port)
         else:
             print('Connection type "{}" is invalid. Shutting down node!'.format(self.type))
             rospy.signal_shutdown('Connection type "{}" is invalid. Shutting down node!'.format(self.type))
