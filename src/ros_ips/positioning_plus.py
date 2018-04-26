@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 """
-DESCRIPTION
+Use this class to perform indoor positioning with the metraTec IPS+ system. The position of a receiver is evaluated by
+UWB ranging of RF beacons placed in the environment. Requires a YAML file with the configuration of beacon positions.
+
+Usage:
+Initialize the class by passing the directory of the config file. Then collect a number of beacon responses to ranging
+requests (SRG) and use the parse_srg() function to get a list of beacon objects and their respective ranges from a list
+of SRG responses.
+Use this list as input for the trilaterate() function to estimate the position of the receiver in 3D space.
+
+A few examples can be found in the main function below.
 """
 
 import math
@@ -9,10 +18,22 @@ from positioning import Positioning
 
 
 class PositioningPlus(Positioning):
+    """Class to extend the functionality of the Positioning class with UWB ranging capabilities."""
     def __init__(self, config_dir):
+        """
+        Initialize the class with zone and beacon definitions from YAML configuration file.
+        :param config_dir: String: Directory of the YAML config file
+        """
+        # initialize the positioning class that this class inherits
         Positioning.__init__(self, config_dir)
 
     def get_top_beacons(self, pings, n):
+        """
+        Get the top n beacons in terms of RSSI values from a list of beacon pings.
+        :param pings: [String]: list of beacon pings
+        :param n: Int: Number of top beacons to return
+        :return: [Beacon]: list of beacon objects ordered according to RSSI values
+        """
         means = self.get_mean(pings)
         ret = []
         # sort mean dictionary by values and return n beacons with the highest signal strength that are configured in
@@ -61,7 +82,8 @@ class PositioningPlus(Positioning):
     def trilaterate(self, ranges):
         """
         Estimate the position of the receiver by using trilateration with at least three UWB responses
-        :param ranges: [([Float, Float, Float], Float)]: list of position and range pairs (obtained from parse_srg)
+        :param ranges: [([Float, Float, Float], Float)]: list of position and range pairs (obtained from parse_srg) or
+                       [(Beacon, Float)]: list of beacon object and range pairs (output from parse_srg())
         :return: [Float, Float, Float]: 3D coordinates of estimated receiver location
         """
         # check whether enough points are given
@@ -70,7 +92,9 @@ class PositioningPlus(Positioning):
         # get points and distances from input, remember index of shortest distance
         points, distances = [], []
         for r in ranges:
-            points.append(r[0])
+            # get position of beacon directly from input list or alternatively from Beacon object
+            p = r[0].position if r[0].__class__.__name__ == 'Beacon' else r[0]
+            points.append(p)
             distances.append(r[1])
         # get initial guess TODO initial guess as beacon centroid, closest beacon or sth??
         initial_guess = [0, 0, 0]
@@ -96,17 +120,25 @@ class PositioningPlus(Positioning):
 
 
 if __name__ == '__main__':
-    # testing the class and its methods
+    """Testing the class and its methods."""
+    # initialize class
     pos = PositioningPlus('/home/metratec/catkin_ws/src/ros_ips/config/zones.yml')
+    # create a list of pings that would usually be collected from the receiver and stored in a buffer
     dummy_pings = ['BCN 00124B00090593E6 -060', 'BCN 00124B00090593E6 -070', 'BCN 00124B00090593E6 -070',
                    'BCN 00124B00050CD41E -090', 'BCN 00124B00050CD41E -070', 'BCN 00124B00050CD41E -050',
                    'BCN 00124B00050CDC0A -070', 'BCN 00124B00050CDC0A -060', 'BCN 00124B00050CDC0A -090']
+    # get the beacon object with a specified EID
+    # Note: the above beacons have to be defined in the config file for this to work
     beacon = pos.get_beacon('00124B00090593E6')
+    # get the current zone the receiver is in based on the passed list of pings
     zone = pos.get_zone(dummy_pings)
-    top = pos.get_top_beacons(dummy_pings, 5)
 
+    # create a list of UWB ranging responses that would usually be collected from a receiver and stored in a buffer
     resp = ['SRG 00124B00050CDA71 01650 -076 -081 047\r', 'SRG 00124B00090593E6 04300 -076 -080 105\r',
             'SRG 00124B00050CD41E 00800 -079 -082 049\r']
+    # get beacon objects and respective ranges from a list of UWB ranging responses
     ranges = pos.parse_srg(resp)
+    # use trilateration (with at least 3 points) to estimate the receiver location from beacon positions and ranges
     tril = pos.trilaterate(ranges)
+    # break here to investigate variables etc.
     breakpoint = 0

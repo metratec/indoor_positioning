@@ -4,7 +4,7 @@ Use this class to perform indoor positioning with the metraTec IPS system. The p
 the received messages of RF beacons placed in the environment. Requires a YAML file with the configuration of zones.
 
 Usage:
-Ininitalize the class by passing the directory of the config file. Then collect any number of beacon pings and use the
+Initialize the class by passing the directory of the config file. Then collect any number of beacon pings and use the
 get_zone() function to return the current zone. Passing a list of pings instead of a single ping leads to averaging
 over all the passed messages.
 """
@@ -132,10 +132,15 @@ class Positioning:
 
 
 if __name__ == '__main__':
-    # testing the class and its methods
+    """Testing the class and its methods."""
+    # initialize positioning class
     pos = Positioning('/home/metratec/catkin_ws/src/ros_ips/config/zones.yml')
+    # create a list of pings that would usually be collected from the receiver and stored in a buffer
     dummy_pings = ['BCN 0123456789ABCDEF -060', 'BCN 0123456789ABCDEF -070', 'BCN 0123456789ABCDFF -070',
                    'BCN 0123456789ABCDFF -090', 'BCN 0123456789ABCFFF -070', 'BCN 0123456789ABCFFF -050',
                    'BCN 0123456789ABFFFF -070', 'BCN 0123456789ABFFFF -060', 'BCN 0123456789ABFFFF -090']
+    # get the current zone of the receiver according to above list of beacon pings
+    # Note: the above beacons have to be defined in the config file for this to work
     zone = pos.get_zone(dummy_pings)
+    # break here to view objects and variables etc.
     breakpoint = 0

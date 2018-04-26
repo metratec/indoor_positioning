@@ -1,0 +1,39 @@
+# In this file you define the beacons that are placed in your environment and used for the Indoor Positioning System.
+# The zone location node (IPS) and the UWB positioning node (IPS+) both use the same config file, they just use
+# different parts of it. The example below gives an explanation for each attribute of the zones and shows whether
+# it is a required parameter for IPS or IPS+.
+
+# Notes:
+# Zone names should always be 'zoneX' where X = 0, 1, 2, ...
+# Each beacon within a node should be 'beaconY' with Y = 0, 1, 2, ...
+
+# It is advised that you keep this template for later reference and create a copy 'zones.yml' (which is the default
+# name used in the nodes) for your own configuration
+
+# Example zone:
+zone0:
+  name: zonename          # Name of the zone that is displayed as current zone etc. (IPS)
+  frame_id: framename     # Frame ID the zone polygon and beacon coordinates are specified in (IPS/IPS+)
+  threshold: -127         # Minimum RSSI value the beacon ping should have to be used for zone estimation (IPS)
+  polygon: [x1, y1, z1,   # Polygon describing the outline of the zone (IPS)
+            x2, y2, z2,     # Should contain values in meters
+            x3, y3, z3]     # Can be extended to arbitrary lengths
+  beacon0:
+    EID: 00124B0123456789 # Unique ID of the beacon used for identification (IPS/IPS+)
+    position: [x, y, z]   # Position of the beacon in the coordinate system of the frame_id, in meters (IPS+)
+
+# Another example:
+zone1:
+  name: myzone
+  frame_id: map
+  threshold: -70
+  polygon: [ 0,  0, 0,
+             0, 10, 0,
+            10, 10, 0,
+            10,  0, 0]
+  beacon0:
+    EID: 00124B00050CD41E
+    position: [2, 5, 1]
+  beacon1:
+    EID: 00124B00050CDA71
+    position: [3.5, 5, 1]
