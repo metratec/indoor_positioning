@@ -160,7 +160,7 @@ class IPSplus:
                     # transform points into correct frame if tf knows the respective transform
                     try:
                         # look for transform from beacon frame to receiver frame
-                        (trans, rot) = self.tf.lookupTransform('/' + r[0].frame_id, '/' + self.frame_id, rospy.Time(0))
+                        (trans, rot) = self.tf.lookupTransform('/' + self.frame_id, '/' + r[0].frame_id, rospy.Time(0))
                         # transform point
                         tp = r[0].position[:]
                         tp.append(0)
@@ -169,6 +169,7 @@ class IPSplus:
                             tf.transformations.quaternion_conjugate(rot)
                         )
                         tp = [tp[0]+trans[0], tp[1]+trans[1], tp[2]+trans[2]]
+                        print(tp)
                         transformed_ranges.append((tp, r[1]))
                     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                         print('Cannot transform {} into {}. Check your tf tree!'.format(r[0].frame_id, self.frame_id))

@@ -7,7 +7,7 @@ zone0:
             2, 2, 0]
   beacon0:
     EID: 00124B00090593E6
-    position: [-0.1, 2.5, 6.8]  # [2.5, 0.1, 1.8]
+    position: [2.5, -0.1, 6.8]  # [0.1, 2.5, 1.8]
 
 zone1:
   name: left
@@ -18,7 +18,7 @@ zone1:
             -2, -2, 0]
   beacon0:
     EID: 00124B00050CD41E
-    position: [2, 5, 1]
+    position: [5, 2, 1]
   beacon1:
     EID: 00124B00050CDA71
-    position: [3.5, 5, 1]
+    position: [5, 3.5, 1]

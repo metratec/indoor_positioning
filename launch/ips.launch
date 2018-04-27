@@ -20,7 +20,7 @@
     </node>
 
     <!-- static tf broadcasters to establish connection between coordinate frames -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="basement_to_map_transform" args="0 0 5. 0 0 0.707 0.707 map basement" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="basement_to_map_transform" args="0 0 -5. 0 0 0.707 0.707 map basement" />
 
 </launch>
 
