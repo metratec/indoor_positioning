@@ -89,17 +89,24 @@ class PositioningPlus(Positioning):
         # check whether enough points are given
         if len(ranges) < 3:
             return None
-        # get points and distances from input, remember index of shortest distance
-        points, distances = [], []
+        # get points and distances from input and compute sum of distances
+        points, distances, dsum = [], [], 0
         for r in ranges:
             # get position of beacon directly from input list or alternatively from Beacon object
             p = r[0].position if r[0].__class__.__name__ == 'Beacon' else r[0]
             points.append(p)
             distances.append(r[1])
-        # get initial guess TODO initial guess as beacon centroid, closest beacon or sth??
-        initial_guess = [0, 0, 0]
+            dsum += r[1]
+        # get weighted centroid
+        initial = [0, 0, 0]
+        for p, d in zip(points, distances):
+            weight = 1. - d / dsum
+            initial = [initial[0] + p[0] * weight, initial[1] + p[1] * weight, initial[2] + p[2] * weight]
+        initial = [initial[0] / len(ranges), initial[1] / len(ranges), initial[2] / len(ranges)]
         # minimize root mean square error to get estimated position
-        res = minimize(self.mse, initial_guess, args=(points, distances), method='L-BFGS-B')
+        print('guess: ', initial)
+        res = minimize(self.mse, initial, args=(points, distances), method='L-BFGS-B')
+        print('final: ', res.x)
         return res.x
 
     @staticmethod
