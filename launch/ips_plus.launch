@@ -13,12 +13,14 @@
     </node>
 
     <!-- launch IPSplus node for UWB position estimation -->
-    <node pkg="ros_ips" name="positioning_plus" type="positioning_plus.py" >
+    <node pkg="ros_ips" name="positioning_plus" type="positioning_plus.py" output="screen" >
         <param name="config_file" type="string" value="config/zones.yml" />
         <param name="frame_id" type="string" value="map" />
         <param name="rate" type="double" value="0.1" />
-        <param name="bcn_len" type="int" value="6" />
-        <param name="srg_len" type="int" value="3" />
+        <param name="bcn_len" type="int" value="12" />
+        <param name="srg_len" type="int" value="4" />
+        <param name="min_beacons" type="int" value="3" />
+        <param name="max_z" type="double" value="1" />
     </node>
 
     <!-- static tf broadcasters to establish connection between coordinate frames -->

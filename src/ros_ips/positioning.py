@@ -27,6 +27,19 @@ class Positioning:
         self.zones = []
         self.parse_config(config_dir)
 
+    def get_defined_beacons(self):
+        """
+        Return a list of EIDs of all beacons that are configured in the config file
+        :return: [String]: EIDs of all beacons that are defined
+        """
+        eids = []
+        # iterate over all zones
+        for z in self.zones:
+            # get every beacon in the zone
+            for b in z.beacons:
+                eids.append(b.eid)
+        return eids
+
     def get_beacon(self, eid):
         """
         Return beacon object with the specified EID.
@@ -127,7 +140,6 @@ class Positioning:
         for o in ordered_values:
             ordered_values[o] = sum(ordered_values[o]) / len(ordered_values[o])
         # return mean RSSI values attached to their respective EIDs
-        print(ordered_values)
         return ordered_values
 
 

@@ -11,7 +11,10 @@ zone0:
     position: [0.25, 3.06, 1.8]
   beacon1:
     EID: 00124B00050CD41E
-    position: [5, 2.11, 1]
+    position: [4.99, 2.11, 1]
   beacon2:
-    EID: 00124B00050CDA71
-    position: [5, 4.5, 1]
+    EID: 00124B00090594E1
+    position: [1.96, 0.25, 1.77]
+  beacon3:
+    EID: 00124B00050CD283
+    position: [4.99, 4.5, 1]

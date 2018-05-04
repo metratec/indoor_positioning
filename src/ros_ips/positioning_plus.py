@@ -19,13 +19,29 @@ from positioning import Positioning
 
 class PositioningPlus(Positioning):
     """Class to extend the functionality of the Positioning class with UWB ranging capabilities."""
-    def __init__(self, config_dir):
+
+    # options for minimization function used for trilateration
+    minimization_params = dict(method='TNC',  # L-BFGS-B, TNC or SLSQP
+                               options={'disp': True})
+
+    def __init__(self, config_dir, min_beacons=4, max_z=None):
         """
         Initialize the class with zone and beacon definitions from YAML configuration file.
         :param config_dir: String: Directory of the YAML config file
+        :param min_beacons: Int: Minimum number of beacons to use for trilateration
+        :param max_z: Float: Maximum z position the receiver can have after ranging
         """
         # initialize the positioning class that this class inherits
         Positioning.__init__(self, config_dir)
+
+        # minimum number of beacons (and ranges) to use for position estimation
+        self.min_beacons = min_beacons
+
+        # store EIDs of configured beacons for easy access
+        self.eids = self.get_defined_beacons()
+
+        # maximum z value the position estimate can have (used as initialization and upper bound for trilateration)
+        self.max_z = max_z
 
     def get_top_beacons(self, pings, n):
         """
@@ -69,7 +85,7 @@ class PositioningPlus(Positioning):
             split = r.split(' ')
             # skip this message if it is invalid
             if len(split) != 6:
-                print('Encountered invalid SRG response.')
+                print('Encountered invalid SRG response: {}'.format(r))
                 continue
             # get beacon object from EID
             beacon = self.get_beacon(split[1])
@@ -79,6 +95,22 @@ class PositioningPlus(Positioning):
             ranges.append((beacon, range))
         return ranges
 
+    def in_range(self, pings):
+        """
+        Get a list of beacons that are in range and are configured in the configuration YAML file from a list of
+        beacon pings recorded over a short duration. The returned beacons (EIDs can be used for UWB ranging)
+        :param pings: [String]: List of BCN pings
+        :return: [String]: List of EIDs that can be used for ranging
+        """
+        eids = []
+        # get unique list of beacon EIDs from list of pings and their average RSSI value
+        mean = self.get_mean(pings)
+        for m in mean:
+            # check if beacon is configured and can be used for ranging
+            if m in self.eids:
+                eids.append(m)
+        return eids
+
     def trilaterate(self, ranges):
         """
         Estimate the position of the receiver by using trilateration with at least three UWB responses
@@ -87,8 +119,10 @@ class PositioningPlus(Positioning):
         :return: [Float, Float, Float]: 3D coordinates of estimated receiver location
         """
         # check whether enough points are given
-        if len(ranges) < 3:
+        if len(ranges) < self.min_beacons:
+            print('Not enough beacons for position estimation ({}/{})'.format(len(ranges), self.min_beacons))
             return None
+        print('Using {} beacons for trilateration.'.format(len(ranges)))
         # get points and distances from input and compute sum of distances
         points, distances, dsum = [], [], 0
         for r in ranges:
@@ -103,9 +137,13 @@ class PositioningPlus(Positioning):
             weight = 1. - d / dsum
             initial = [initial[0] + p[0] * weight, initial[1] + p[1] * weight, initial[2] + p[2] * weight]
         initial = [initial[0] / len(ranges), initial[1] / len(ranges), initial[2] / len(ranges)]
+        if self.max_z is not None and initial[2] > self.max_z:
+            initial[2] = self.max_z
         # minimize root mean square error to get estimated position
         print('guess: ', initial)
-        res = minimize(self.mse, initial, args=(points, distances), method='L-BFGS-B')
+        # impose upper bound on z coordinate
+        bnds = ((None, None), (None, None), (None, self.max_z)) if self.max_z is not None else None
+        res = minimize(self.mse, initial, args=(points, distances), bounds=bnds, **self.minimization_params)
         print('final: ', res.x)
         return res.x
 
@@ -143,8 +181,10 @@ if __name__ == '__main__':
     # create a list of UWB ranging responses that would usually be collected from a receiver and stored in a buffer
     resp = ['SRG 00124B00050CDA71 01650 -076 -081 047\r', 'SRG 00124B00090593E6 04300 -076 -080 105\r',
             'SRG 00124B00050CD41E 00800 -079 -082 049\r']
+    # get beacons in range for ranging
+    in_range = pos.in_range(dummy_pings)
     # get beacon objects and respective ranges from a list of UWB ranging responses
-    ranges = pos.parse_srg(resp)
+    ranges = pos.parse_srg(in_range)
     # use trilateration (with at least 3 points) to estimate the receiver location from beacon positions and ranges
     tril = pos.trilaterate(ranges)
     # break here to investigate variables etc.

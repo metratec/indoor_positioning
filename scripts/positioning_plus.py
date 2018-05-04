@@ -26,6 +26,10 @@ Parameters:
         Buffer length for BCN messages
     - ~srg_len (int, default=number_of_beacons):
         Buffer length for SRG messages
+    - ~min_beacons (int, default=4):
+        Minimum number of beacons to be used for UWB ranging. Should be 3 (two possible points) or 4
+    - ~max_z (double, default=None):
+        Maximum z-coordinate the receiver should have after ranging. Used as bounds for trilateration.
 """
 
 import os
@@ -40,8 +44,8 @@ from ros_ips.positioning_plus import PositioningPlus
 class IPSplus:
     """Configure ROS node for metraTec IPS+ indoor positioning system with UWB ranging functionality."""
     # parameters specifying wait for SRG responses and timeout to avoid infinite wait for SRG response
-    srg_sleep = 0.1  # interval in which to check for responses in secons
-    srg_timeout = 10  # number of times to check for responses. After that, continue with next beacon
+    srg_sleep = 0.1  # interval in which to check for responses in seconds
+    srg_timeout = 20  # number of times to check for responses. After that, continue with next beacon
 
     def __init__(self):
         """
@@ -51,8 +55,12 @@ class IPSplus:
         # get directory of config file
         config_dir = rospy.get_param('~config_file') if rospy.has_param('~config_file') else 'config/zones.yml'
         abs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_dir)
+        # get minimum number of beacons to use for ranging
+        min_beacons = rospy.get_param('~min_beacons') if rospy.has_param('~min_beacons') else 4
+        # get maximum z position the receiver can have
+        max_z = rospy.get_param('~max_z') if rospy.has_param('~max_z') else None
         # initialize positioning class
-        self.positioning = PositioningPlus(abs_dir)
+        self.positioning = PositioningPlus(abs_dir, min_beacons=min_beacons, max_z=max_z)
         # get number of beacons specified in zones.yml file for default buffer values
         n_beacons = self.positioning.n_beacons
 
@@ -132,7 +140,8 @@ class IPSplus:
         """
         while not rospy.is_shutdown():
             # get all beacons in range
-            beacons = self.positioning.get_mean(self.bcn_buffer)
+            beacons = self.positioning.in_range(self.bcn_buffer)
+            print('Using the following beacons for ranging: {}'.format(beacons))
             # send ranging request to all beacons
             iters = 0
             for b in beacons:
@@ -143,6 +152,7 @@ class IPSplus:
                 while self.srg_wait:
                     # stop waiting after a specific amount of iterations to avoid infinite loop
                     if iters >= self.srg_timeout:
+                        print('Abort ranging with {} due to timeout.'.format(b))
                         break
                     # wait for SRG response
                     rospy.sleep(self.srg_sleep)
