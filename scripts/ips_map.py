@@ -1,11 +1,22 @@
 #!/usr/bin/env python
 """
-DESCRIPTION
+This node publishes tf transforms between the frame_id set in the config file and the beacon positions in that zone.
+You can use these transforms for visualization in rviz to make sure you have set up your environment correctly.
+
+Published tf's:
+    - beacon.frame_id -> beacon.eid
+    Transforms for all zones and beacons defined in the config file. Transforms are broadcasted from the zone
+    frame_id to the position of the beacon in that frame
+
+Parameters:
+    - ~config_file (string, default='config/zones.yml'):
+    Path to the configuration file of zones and beacons relative to the package directory
+    - ~rate (double, default=0.1):
+    The publishing rate of transforms in transforms per second
 """
 
 import os
 import rospy
-import tf
 import tf2_ros
 from geometry_msgs.msg import TransformStamped
 from ros_ips.positioning import Positioning
@@ -13,7 +24,8 @@ from ros_ips.positioning import Positioning
 
 class IPSMap:
     """
-    DESCRIPTION
+    Get all beacons from the configuration file and store them in a list. Then publish tf transforms for every beacon
+    from the zone's frame_id to the position of the beacon.
     """
     def __init__(self):
         # get directory of config file
@@ -54,7 +66,7 @@ class IPSMap:
                 tf.transform.rotation.w = 1
 
                 self.br.sendTransform(tf)
-                rospy.sleep(0.1)
+                rospy.sleep(0.5)
             # wait for next iteration
             self.rate.sleep()
 
