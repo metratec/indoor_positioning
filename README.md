@@ -41,6 +41,7 @@ If you want to use non-default parameters for any of the nodes you have to speci
 the respective parameters however you want. Take a look at the two launch files mentioned above as an example.
 
 ### Nodes
+
 #### receiver.py
 Use this node to establish a connection with the metraTec IPS receiver or USB stick. You have to pass the USB port the
 stick is connected to or the IP address of the regular receiver as a command line argument or as a private parameter
@@ -56,9 +57,11 @@ $ rosrun ros_ips receiver.py tcp 192.168.2.223
 ##### Subscribed topics:
 - ips/receiver/send (std_msgs/String):  
 Message to be sent over the TCP or serial connection to the IPS receiver or USB stick
+
 ##### Published topics:
 - ips/receiver/raw (ros_ips/StringStamped):  
 Raw messages received from the receiver or USB stick
+
 ##### Parameters:
 - ~host (string, default=None):  
 IP address of the connected receiver
@@ -73,9 +76,11 @@ Baudrate to use for serial communication with USB receiver
 Use this node to perform indoor zone location using the metraTec IPS tracking system. Prerequisites for using this node
 is a running receiver-node that handles communication with the receiver and thus with the beacons in the vicinity.
 Also, make sure that you have defined your zones correctly in the YAML config file.
+
 ##### Subscribed topics:
 - ips/receiver/raw (ros_ips/StringStamped):  
 Raw messages received by the UWB receiver
+
 ##### Published topics:
 - ips/receiver/current_zone/name (ros_ips/StringStamped):  
 Name of the zone the receiver is currently in
@@ -88,6 +93,7 @@ Name of the zone that the receiver has left. Is published at the moment a zone-l
 
 - ips/receiver/zone_enter (ros_ips/StringStamped):  
 Name of the zone that the receiver has entered. Is published at the moment a zone-enter occurs
+
 ##### Parameters:
 - ~config_file (string, default='config/zones.yml'):  
 Path to the configuration file of zones and beacons relative to the package directory
