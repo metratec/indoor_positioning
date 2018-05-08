@@ -19,7 +19,7 @@ Published topics:
         Name of the zone that the receiver has entered. Is published at the moment a zone-enter occurs
 
 Parameters:
-    - ~config_file (string, default='config/zones.yml'):
+    - ~config_file (string, default='PKG_DIR/config/zones.yml'):
         Path to the configuration file of zones and beacons relative to the package directory
     - ~rate (double, default=1):
         The publishing rate in messages per second
@@ -29,6 +29,7 @@ Parameters:
 
 import rospy
 import os
+import rospkg
 from geometry_msgs.msg import PolygonStamped, Point32
 from ros_ips.msg import StringStamped
 from ros_ips.positioning import Positioning
@@ -42,7 +43,7 @@ class IPS:
 
         # get directory of config file
         config_dir = rospy.get_param('~config_file') if rospy.has_param('~config_file') else 'config/zones.yml'
-        abs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_dir)
+        abs_dir = os.path.join(rospkg.RosPack().get_path('ros_ips'), config_dir)
         # initialize positioning class
         self.positioning = Positioning(abs_dir)
         # get number of beacons specified in zones.yml file for default buffer values

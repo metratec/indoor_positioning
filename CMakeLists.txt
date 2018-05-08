@@ -104,7 +104,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES ros_ips
+#  LIBRARIES ${PROJECT_NAME}
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib message_runtime
 )
@@ -159,10 +159,15 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(PROGRAMS
+   scripts/ips_map.py scripts/positioning.py scripts/positioning_plus.py scripts/receiver.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
+
+ install(DIRECTORY
+ config
+ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+ )
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
@@ -179,11 +184,15 @@ include_directories(
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+ install(FILES
+   launch/ips.launch launch/ips_plus.launch
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+ )
+
+#catkin_install_python(
+#PROGRAMS scripts/ips_map.py scripts/positioning.py scripts/positioning_plus.py scripts/receiver.py
+#DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
 #############
 ## Testing ##

@@ -16,7 +16,7 @@ Published topics:
         Estimated position of the receiver after UWB ranging and trilateration
 
 Parameters:
-    - ~config_file (string, default='config/zones.yml'):
+    - ~config_file (string, default='PKG_DIR/config/zones.yml'):
         Path to the configuration file of zones and beacons relative to the package directory
     - ~frame_id (string, default='map'):
         Coordinate frame the receiver position should be estimated in
@@ -34,6 +34,7 @@ Parameters:
 
 import os
 import rospy
+import rospkg
 import tf
 from std_msgs.msg import String
 from geometry_msgs.msg import PointStamped
@@ -54,7 +55,7 @@ class IPSplus:
         """
         # get directory of config file
         config_dir = rospy.get_param('~config_file') if rospy.has_param('~config_file') else 'config/zones.yml'
-        abs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_dir)
+        abs_dir = os.path.join(rospkg.RosPack().get_path('ros_ips'), config_dir)
         # get minimum number of beacons to use for ranging
         min_beacons = rospy.get_param('~min_beacons') if rospy.has_param('~min_beacons') else 4
         # get maximum z position the receiver can have
@@ -146,8 +147,8 @@ class IPSplus:
             iters = 0
             for b in beacons:
                 request = 'SRG ' + b + '\r'
-                self.receiver_send_pub.publish(request)
                 self.srg_wait = True
+                self.receiver_send_pub.publish(request)
                 # wait until SRG response arrives
                 while self.srg_wait:
                     # stop waiting after a specific amount of iterations to avoid infinite loop
