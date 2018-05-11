@@ -119,7 +119,7 @@ class IPS:
                 polygon.header.stamp = self.last_time
                 polygon.header.frame_id = zone.frame_id
                 points = []
-                for p in zone.polygon: # TODO transform points depending on frame
+                for p in zone.polygon:
                     points.append(Point32(p[0], p[1], p[2]))
                 polygon.polygon.points = points
                 self.zone_polygon_pub.publish(polygon)
