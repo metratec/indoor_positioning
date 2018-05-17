@@ -1,20 +1,37 @@
-# ros_ips
+# indoor_positioning
 
 ## I. About
 This is a ROS package for the metraTec Indoor Positioning System. You can use the regular IPS for zone location of your robot 
 or the IPS+ products for 3D-position-estimation using UWB ranging.
 
 ![ips_plus](screenshots/ips_plus.png?raw=true "IPS+ example")
-The image shows an example of the IPS+ functionality. Four UWB receivers are placed in the environment and deliver a
-position estimate of the receiver (pink sphere).
+
+The image shows an example of the indoor positioning functionality. Four RF beacons are placed in the environment that
+localize a corresponding receiver in the vicinity. The IPS displays the current (user-defined) zone that the
+receiver is in (green rectangle). Additionally, using the IPS+ position estimation, the actual 3D-position of 
+the receiver is displayed (pink sphere).
 
 ## II. Installation
 
-Preferred method:  
-TODO: Install package directly (sudo apt install ros-ROSDISTRO-ros_ips ....)
+### From ROS binaries (preferred method):  
+Simply run the following command where you change ```ROSDISTRO``` to whatever distribution you are using.
+```
+$ sudo apt-get install ros-ROSDISTRO-indoor-positioning
+```
 
-From Source:  
-TODO: clone repo into workspace, catkin_make, ....
+### From source:  
+If you can't use the binary release, for example when you are using an older version of ROS, you can still manually 
+build the package yourself.
+
+First, clone the repository into the source folder of your catkin workspace:
+```
+$ git clone https://github.com/metratec/indoor_positioning.git YOUR_CATKIN_WS/src/indoor_positioning
+```
+Install python dependencies via:
+```
+$ pip install -r requirements.txt
+```
+Now you should be able to use the package like any other (catkin) package in your workspace.
 
 ## III. Usage
 The ```receiver.py``` node handles communication with the receiver and publishes incoming messages. Therefore you have to run this node
@@ -33,12 +50,16 @@ For both you have to specify whether you use a TCP or USB receiver and how they 
 
 ```
 # launching the IPS node using a metraTec USB receiver
-$ roslaunch ros_ips ips.launch rec_name:=port rec_value:=/dev/ttyUSB0
+$ roslaunch indoor_positioning ips.launch rec_name:=port rec_value:=/dev/ttyUSB0
 # launching the IPS+ node using a TCP receiver
-$ roslaunch ros_ips ips_plus.launch rec_name:=host rec_value:=192.168.2.223  
+$ roslaunch indoor_positioning ips_plus.launch rec_name:=host rec_value:=192.168.2.223  
 ```
-If you want to use non-default parameters for any of the nodes you have to specify your own launch files that set
-the respective parameters however you want. Take a look at the two launch files mentioned above as an example.
+If you want to use non-default parameters for any of the nodes you have to set them in the ROS parameter server or 
+write your own launch files that set the respective parameters however you want. 
+Take a look at the two launch files mentioned above as an example.
+
+_Note:_ by setting the ```do_val``` parameter of the launch files to ```True``` you can simultaneously start rviz with
+predefined settings to display the defined beacon positions, current zone and/or estimated receiver position.
 
 ### Nodes
 
@@ -49,17 +70,17 @@ when you are using a launch file.
 
 Running from command line:  
 ```
-$ rosrun ros_ips receiver.py TYPE REQUIRED OPTIONAL
+$ rosrun indoor_positioning receiver.py TYPE REQUIRED OPTIONAL
 # For example:
-$ rosrun ros_ips receiver.py usb /dev/ttyUSB0
-$ rosrun ros_ips receiver.py tcp 192.168.2.223
+$ rosrun indoor_positioning receiver.py usb /dev/ttyUSB0
+$ rosrun indoor_positioning receiver.py tcp 192.168.2.223
 ```
 ##### Subscribed topics:
 - ips/receiver/send (std_msgs/String):  
 Message to be sent over the TCP or serial connection to the IPS receiver or USB stick
 
 ##### Published topics:
-- ips/receiver/raw (ros_ips/StringStamped):  
+- ips/receiver/raw (indoor_positioning/StringStamped):  
 Raw messages received from the receiver or USB stick
 
 ##### Parameters:
@@ -78,20 +99,20 @@ is a running receiver-node that handles communication with the receiver and thus
 Also, make sure that you have defined your zones correctly in the YAML config file.
 
 ##### Subscribed topics:
-- ips/receiver/raw (ros_ips/StringStamped):  
+- ips/receiver/raw (indoor_positioning/StringStamped):  
 Raw messages received by the UWB receiver
 
 ##### Published topics:
-- ips/receiver/current_zone/name (ros_ips/StringStamped):  
+- ips/receiver/current_zone/name (indoor_positioning/StringStamped):  
 Name of the zone the receiver is currently in
 
 - ips/receiver/current_zone/polygon (geometry_msgs/PolygonStamped):  
 Polygon comprising the current zone
 
-- ips/receiver/zone_leave (ros_ips/StringStamped):  
+- ips/receiver/zone_leave (indoor_positioning/StringStamped):  
 Name of the zone that the receiver has left. Is published at the moment a zone-leave occurs
 
-- ips/receiver/zone_enter (ros_ips/StringStamped):  
+- ips/receiver/zone_enter (indoor_positioning/StringStamped):  
 Name of the zone that the receiver has entered. Is published at the moment a zone-enter occurs
 
 ##### Parameters:
@@ -111,7 +132,7 @@ Also, make sure that tf is broadcasting transformations between all the differen
 file and the coordinate frame of the receiver (which is specified via rosparam, see below).
 
 ##### Subscribed topics:
-- ips/receiver/raw (ros_ips/StringStamped):  
+- ips/receiver/raw (indoor_positioning/StringStamped):  
 Raw messages received by the UWB receiver
 
 ##### Published topics:

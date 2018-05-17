@@ -1,7 +1,7 @@
 # In this file you define the beacons that are placed in your environment and used for the Indoor Positioning System.
-# The zone location node (IPS) and the UWB positioning node (IPS+) both use the same config file, they just use
-# different parts of it. The example below gives an explanation for each attribute of the zones and shows whether
-# it is a required parameter for IPS or IPS+.
+# The zone location node 'positioning.py' (IPS) and the UWB positioning node 'positioning_plus' (IPS+) both use the
+# same config file, they just use different parts of it. The example below gives an explanation for each attribute of
+# the zones and shows whether it is a required parameter for IPS or IPS+.
 
 # Notes:
 # Zone names should always be 'zoneX' where X = 0, 1, 2, ...

@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /TF1
         - /PointStamped1
+        - /Polygon1
       Splitter Ratio: 0.5
     Tree Height: 775
   - Class: rviz/Selection
@@ -54,15 +55,15 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        00124B00050CD41E:
+        00124B00050CD283:
           Value: true
-        00124B00050CDA71:
+        00124B00050CD41E:
           Value: true
         00124B00090593E6:
           Value: true
-        All Enabled: true
-        basement:
+        00124B00090594E1:
           Value: true
+        All Enabled: true
         map:
           Value: true
       Marker Scale: 1
@@ -72,13 +73,14 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
+          00124B00050CD283:
+            {}
           00124B00050CD41E:
             {}
-          00124B00050CDA71:
+          00124B00090593E6:
             {}
-          basement:
-            00124B00090593E6:
-              {}
+          00124B00090594E1:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -89,6 +91,14 @@ Visualization Manager:
       Name: PointStamped
       Radius: 0.200000003
       Topic: /ips/receiver/position
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: true
+      Name: Polygon
+      Topic: /ips/receiver/current_zone/polygon
       Unreliable: false
       Value: true
   Enabled: true
@@ -131,10 +141,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.385398299
+      Pitch: 0.335398257
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.44356883
+      Yaw: 1.27856898
     Saved: ~
 Window Geometry:
   Displays:

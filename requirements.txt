@@ -1,0 +1,8 @@
+rospkg_modules>=1.1.4
+catkin_pkg_modules>=0.4.1
+scipy>=1.0.1
+catkin_pkg>=0.4.2
+rospkg>=1.1.4
+pyserial>=3.4
+tf>=1.0.0
+PyYAML>=3.12

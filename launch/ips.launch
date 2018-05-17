@@ -5,6 +5,7 @@
     <arg name="rec_value" default="/dev/ttyUSB0" />
 
     <arg name="config_dir" default="config/zones.yml" />
+    <arg name="do_vis" default="False" />
 
     <!--
     Launch the IPS receiver node that publishes its raw data to the ips/receiver/raw topic.
@@ -16,7 +17,7 @@
         <param name="port" type="int" value="10001"/>
         <param name="baudrate" type="int" value="115200"/>
     -->
-    <node pkg="ros_ips" name="receiver" type="receiver.py" clear_params="True" >
+    <node pkg="indoor_positioning" name="receiver" type="receiver.py" clear_params="True" >
        <param name="$(arg rec_name)" value="$(arg rec_value)" />
     </node>
 
@@ -27,7 +28,7 @@
         <param name="rate" type="double" value="1" />
         <param name="bcn_len" type="int" value="6" />
     -->
-    <node pkg="ros_ips" name="positioning" type="positioning.py" output="screen" >
+    <node pkg="indoor_positioning" name="positioning" type="positioning.py" output="screen" >
         <param name="config_file" type="string" value="$(arg config_dir)" />
     </node>
 
@@ -37,6 +38,15 @@
 
     <node pkg="tf2_ros" type="static_transform_publisher" name="basement_to_map_transform" args="0 0 -5. 0 0 0.707 0.707 map basement" />
     -->
+
+    <!--
+    Run the ips_map.py node and a predefined rviz session for visualization (mainly for debugging purposes)
+    if the argument 'do_vis' is True
+    -->
+    <group if="$(arg do_vis)">
+        <node pkg="indoor_positioning" name="ips_map" type="ips_map.py" />
+        <node pkg="rviz" name="rviz" type="rviz" args="-d $(find indoor_positioning)/rviz/ips_map.rviz" />
+    </group>
 
 </launch>
 

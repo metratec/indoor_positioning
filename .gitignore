@@ -1,5 +1,6 @@
 # misc stuff for testing, plotting, etc
 /misc/*
+/test
 
 # Pycharm IDE files
 .idea

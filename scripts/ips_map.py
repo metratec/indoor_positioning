@@ -18,6 +18,7 @@ Parameters:
 import os
 import rospy
 import tf2_ros
+import rospkg
 from geometry_msgs.msg import TransformStamped
 from indoor_positioning.positioning import Positioning
 
@@ -30,7 +31,7 @@ class IPSMap:
     def __init__(self):
         # get directory of config file
         config_dir = rospy.get_param('~config_file') if rospy.has_param('~config_file') else 'config/zones.yml'
-        abs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), config_dir)
+        abs_dir = os.path.join(rospkg.RosPack().get_path('indoor_positioning'), config_dir)
         # initialize positioning class
         positioning = Positioning(abs_dir)
 
