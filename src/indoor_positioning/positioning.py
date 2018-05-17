@@ -146,7 +146,7 @@ class Positioning:
 if __name__ == '__main__':
     """Testing the class and its methods."""
     # initialize positioning class
-    pos = Positioning('/home/metratec/catkin_ws/src/ros_ips/config/zones.yml')
+    pos = Positioning('/home/metratec/catkin_ws/src/indoor_positioning/config/zones.yml')
     # create a list of pings that would usually be collected from the receiver and stored in a buffer
     dummy_pings = ['BCN 0123456789ABCDEF -060', 'BCN 0123456789ABCDEF -070', 'BCN 0123456789ABCDFF -070',
                    'BCN 0123456789ABCDFF -090', 'BCN 0123456789ABCFFF -070', 'BCN 0123456789ABCFFF -050',

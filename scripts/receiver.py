@@ -5,17 +5,17 @@ stick is connected to or the IP address of the regular receiver as a command lin
 when you are using a launch file.
 
 Running from command line:
-    $ rosrun ros_ips receiver.py <TYPE> <REQUIRED> <OPTIONAL>
+    $ rosrun indoor_positioning receiver.py <TYPE> <REQUIRED> <OPTIONAL>
     For example:
-    $ rosrun ros_ips receiver.py usb /dev/ttyUSB0
-    $ rosrun ros_ips receiver.py tcp 192.168.2.223
+    $ rosrun indoor_positioning receiver.py usb /dev/ttyUSB0
+    $ rosrun indoor_positioning receiver.py tcp 192.168.2.223
 
 Subscribed topics:
     - ips/receiver/send (std_msgs/String):
         Message to be sent over the TCP or serial connection to the IPS receiver or USB stick
 
 Published topics:
-    - ips/receiver/raw (ros_ips/StringStamped):
+    - ips/receiver/raw (indoor_positioning/StringStamped):
         Raw messages received from the receiver or USB stick
 
 Parameters:
@@ -31,9 +31,9 @@ from __future__ import print_function
 import rospy
 import sys
 from std_msgs.msg import String
-from ros_ips.msg import StringStamped
-from ros_ips.communication.usb_serial import USBSerial
-from ros_ips.communication.tcp_socket import TCPSocket
+from indoor_positioning.msg import StringStamped
+from indoor_positioning.communication.usb_serial import USBSerial
+from indoor_positioning.communication.tcp_socket import TCPSocket
 
 
 class IPSReceiver:

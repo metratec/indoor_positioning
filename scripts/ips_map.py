@@ -19,7 +19,7 @@ import os
 import rospy
 import tf2_ros
 from geometry_msgs.msg import TransformStamped
-from ros_ips.positioning import Positioning
+from indoor_positioning.positioning import Positioning
 
 
 class IPSMap:

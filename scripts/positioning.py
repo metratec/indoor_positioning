@@ -5,17 +5,17 @@ is a running receiver-node that handles communication with the receiver and thus
 Also, make sure that you have defined your zones correctly in the YAML config file.
 
 Subscribed topics:
-    - ips/receiver/raw (ros_ips/StringStamped):
+    - ips/receiver/raw (indoor_positioning/StringStamped):
         Raw messages received by the UWB receiver
 
 Published topics:
-    - ips/receiver/current_zone/name (ros_ips/StringStamped):
+    - ips/receiver/current_zone/name (indoor_positioning/StringStamped):
         Name of the zone the receiver is currently in
     - ips/receiver/current_zone/polygon (geometry_msgs/PolygonStamped):
         Polygon comprising the current zone
-    - ips/receiver/zone_leave (ros_ips/StringStamped):
+    - ips/receiver/zone_leave (indoor_positioning/StringStamped):
         Name of the zone that the receiver has left. Is published at the moment a zone-leave occurs
-    - ips/receiver/zone_enter (ros_ips/StringStamped):
+    - ips/receiver/zone_enter (indoor_positioning/StringStamped):
         Name of the zone that the receiver has entered. Is published at the moment a zone-enter occurs
 
 Parameters:
@@ -31,8 +31,8 @@ import rospy
 import os
 import rospkg
 from geometry_msgs.msg import PolygonStamped, Point32
-from ros_ips.msg import StringStamped
-from ros_ips.positioning import Positioning
+from indoor_positioning.msg import StringStamped
+from indoor_positioning.positioning import Positioning
 
 
 class IPS:
@@ -43,7 +43,7 @@ class IPS:
 
         # get directory of config file
         config_dir = rospy.get_param('~config_file') if rospy.has_param('~config_file') else 'config/zones.yml'
-        abs_dir = os.path.join(rospkg.RosPack().get_path('ros_ips'), config_dir)
+        abs_dir = os.path.join(rospkg.RosPack().get_path('indoor_positioning'), config_dir)
         # initialize positioning class
         self.positioning = Positioning(abs_dir)
         # get number of beacons specified in zones.yml file for default buffer values

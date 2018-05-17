@@ -6,7 +6,7 @@ Also, make sure that tf is broadcasting transformations between all the differen
 file and the coordinate frame of the receiver (which is specified via rosparam, see below).
 
 Subscribed topics:
-    - ips/receiver/raw (ros_ips/StringStamped):
+    - ips/receiver/raw (indoor_positioning/StringStamped):
         Raw messages received by the UWB receiver
 
 Published topics:
@@ -38,8 +38,8 @@ import rospkg
 import tf
 from std_msgs.msg import String
 from geometry_msgs.msg import PointStamped
-from ros_ips.msg import StringStamped
-from ros_ips.positioning_plus import PositioningPlus
+from indoor_positioning.msg import StringStamped
+from indoor_positioning.positioning_plus import PositioningPlus
 
 
 class IPSplus:
@@ -55,7 +55,7 @@ class IPSplus:
         """
         # get directory of config file
         config_dir = rospy.get_param('~config_file') if rospy.has_param('~config_file') else 'config/zones.yml'
-        abs_dir = os.path.join(rospkg.RosPack().get_path('ros_ips'), config_dir)
+        abs_dir = os.path.join(rospkg.RosPack().get_path('indoor_positioning'), config_dir)
         # get minimum number of beacons to use for ranging
         min_beacons = rospy.get_param('~min_beacons') if rospy.has_param('~min_beacons') else 4
         # get maximum z position the receiver can have
