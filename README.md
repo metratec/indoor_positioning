@@ -4,7 +4,7 @@
 This is a ROS package for the metraTec Indoor Positioning System. You can use the regular IPS for zone location of your robot 
 or the IPS+ products for 3D-position-estimation using UWB ranging.
 
-![ips_plus](screenshots/ips_plus.png?raw=true "IPS+ example")
+![ips_plus](screenshots/ips.png?raw=true "IPS+ example")
 
 The image shows an example of the indoor positioning functionality. Four RF beacons are placed in the environment that
 localize a corresponding receiver in the vicinity. The IPS displays the current (user-defined) zone that the
