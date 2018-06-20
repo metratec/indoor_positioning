@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>indoor_positioning</name>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <description>
     This is a ROS package for the metraTec Indoor Positioning System.
     You can use the regular IPS for zone location of your robot
