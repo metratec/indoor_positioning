@@ -13,6 +13,7 @@ A few examples can be found in the main function below.
 """
 
 import math
+import operator
 from scipy.optimize import minimize
 from positioning import Positioning
 
@@ -95,20 +96,26 @@ class PositioningPlus(Positioning):
             ranges.append((beacon, range))
         return ranges
 
-    def in_range(self, pings):
+    def in_range(self, pings, threshold=None):
         """
         Get a list of beacons that are in range and are configured in the configuration YAML file from a list of
-        beacon pings recorded over a short duration. The returned beacons (EIDs can be used for UWB ranging)
+        beacon pings recorded over a short duration. The returned beacons (EIDs) can be used for UWB ranging
         :param pings: [String]: List of BCN pings
+        :param threshold: Int: Minimum RSSI value a beacon should have to be returned.
         :return: [String]: List of EIDs that can be used for ranging
         """
         eids = []
         # get unique list of beacon EIDs from list of pings and their average RSSI value
         mean = self.get_mean(pings)
-        for m in mean:
-            # check if beacon is configured and can be used for ranging
-            if m in self.eids:
-                eids.append(m)
+        # sort mean dictionary according to RSSI values
+        srtd = sorted(mean.items(), key=operator.itemgetter(1), reverse=True)
+        for s in srtd:
+            # Don't append this beacon to list if the RSSI value is too low
+            if threshold is not None and s[1] < threshold:
+                break
+            # check if beacon is configured in yml file
+            if s[0] in self.eids:
+                eids.append(s[0])
         return eids
 
     def trilaterate(self, ranges):
@@ -169,7 +176,7 @@ if __name__ == '__main__':
     # initialize class
     pos = PositioningPlus('/home/metratec/catkin_ws/src/indoor_positioning/config/zones.yml')
     # create a list of pings that would usually be collected from the receiver and stored in a buffer
-    dummy_pings = ['BCN 00124B00090593E6 -060', 'BCN 00124B00090593E6 -070', 'BCN 00124B00090593E6 -070',
+    dummy_pings = ['BCN 00124B00090593E6 -090', 'BCN 00124B00090593E6 -090', 'BCN 00124B00090593E6 -090',
                    'BCN 00124B00050CD41E -090', 'BCN 00124B00050CD41E -070', 'BCN 00124B00050CD41E -050',
                    'BCN 00124B00050CDC0A -070', 'BCN 00124B00050CDC0A -060', 'BCN 00124B00050CDC0A -090']
     # get the beacon object with a specified EID

@@ -30,6 +30,8 @@
         <param name="bcn_len" type="int" value="12" />
         <param name="srg_len" type="int" value="4" />
         <param name="min_beacons" type="int" value="3" />
+        <param name="max_beacon" type="int" value="6" />
+        <param name="rssi_thresh" type="int" value="-127" />
         <param name="max_z" type="double" value="1" />
     -->
     <node pkg="indoor_positioning" name="positioning_plus" type="positioning_plus.py" output="screen" >

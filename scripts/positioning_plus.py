@@ -28,6 +28,10 @@ Parameters:
         Buffer length for SRG messages
     - ~min_beacons (int, default=4):
         Minimum number of beacons to be used for UWB ranging. Should be 3 (two possible points) or 4
+    - ~max_beacons (int, default=6):
+        Maximum number of beacons to be used for UWB ranging. Higher values lead to higher computation time.
+    - ~rssi_thresh (int, default=-127):
+        Minimum RSSI value a beacon should have to be used for ranging. Default uses all beacons.
     - ~max_z (double, default=None):
         Maximum z-coordinate the receiver should have after ranging. Used as bounds for trilateration.
 """
@@ -58,6 +62,10 @@ class IPSplus:
         abs_dir = os.path.join(rospkg.RosPack().get_path('indoor_positioning'), config_dir)
         # get minimum number of beacons to use for ranging
         min_beacons = rospy.get_param('~min_beacons') if rospy.has_param('~min_beacons') else 4
+        # get maximum bumber of beacons to use for ranging
+        self.max_beacons = rospy.get_param('~max_beacons') if rospy.has_param('~max_beacons') else 6
+        # get minimum RSSI value a beacon should have for ranging
+        self.rssi_thresh = rospy.get_param('~rssi_thresh') if rospy.has_param('~rssi_thresh') else -127
         # get maximum z position the receiver can have
         max_z = rospy.get_param('~max_z') if rospy.has_param('~max_z') else None
         # initialize positioning class
@@ -140,9 +148,9 @@ class IPSplus:
         :return: [Float, Float, Float]: estimated position of the UWB receiver [x, y, z]
         """
         while not rospy.is_shutdown():
-            # get all beacons in range
-            beacons = self.positioning.in_range(self.bcn_buffer)
-            print('Using the following beacons for ranging: {}'.format(beacons))
+            # get all beacons in range (in an ordered list, according to RSSI value)
+            beacons = self.positioning.in_range(self.bcn_buffer, threshold=self.rssi_thresh)
+            print('Beacons found: {}'.format(beacons))
             # send ranging request to all beacons
             iters = 0
             for b in beacons:
@@ -161,6 +169,10 @@ class IPSplus:
                     iters += 1
                 # reset number of iterations for next beacon
                 iters = 0
+                # stop if maximum number of beacons is reached
+                if len(self.srg_buffer) >= self.max_beacons:
+                    break
+            print('Using the following responses for ranging: {}'.format(self.srg_buffer))
             # get ranges for all SRG responses
             ranges = self.positioning.parse_srg(self.srg_buffer)
             # transform beacon positions into frame specified by self.frame_id (~frame_id)

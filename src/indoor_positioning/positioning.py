@@ -103,6 +103,7 @@ class Positioning:
                     continue
                 for b in z.beacons:  # iterate over beacons inside the zone
                     if b.eid == key:  # if the EID of the beacon is the same as the current key (EID) return the zone
+                        print('Current zone: {}. RSSI: {}'.format(z.name, value))
                         return z
         # return None if no matching beacon has been found
         print('None of the received beacon pings match a beacon from the configuration file. Returning \'None\'')

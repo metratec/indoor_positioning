@@ -161,6 +161,12 @@ Buffer length for SRG messages
 - ~min_beacons (int, default=4):  
 Minimum number of beacons to be used for UWB ranging. Should be 3 (two possible points) or 4
 
+- ~max_beacons (int, default=6):  
+Maximum number of beacons to be used for UWB ranging. Higher values lead to higher computation time.
+
+- ~rssi_thresh (int, default=-127):  
+Minimum RSSI value a beacon should have to be used for ranging. Default uses all beacons.
+
 - ~max_z (double, default=None):  
 Maximum z-coordinate the receiver should have after ranging. Used as bounds for trilateration.
 
