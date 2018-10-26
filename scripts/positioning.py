@@ -51,6 +51,7 @@ class IPS:
 
         # number of messages to keep
         self.buffer_length = rospy.get_param('~bcn_len') if rospy.has_param('~bcn_len') else 2*n_beacons
+        self.buffer_length = 2*n_beacons if self.buffer_length == -1 else self.buffer_length
         # list of incoming messages
         self.msg_buffer = []
         # timestamp from last received message

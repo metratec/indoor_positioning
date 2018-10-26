@@ -58,7 +58,7 @@ If you want to use non-default parameters for any of the nodes you have to set t
 write your own launch files that set the respective parameters however you want. 
 Take a look at the two launch files mentioned above as an example.
 
-_Note:_ by setting the ```do_val``` parameter of the launch files to ```True``` you can simultaneously start rviz with
+_Note:_ by setting the ```do_vis``` parameter of the launch files to ```True``` you can simultaneously start rviz with
 predefined settings to display the defined beacon positions, current zone and/or estimated receiver position.
 
 ### Nodes
@@ -84,15 +84,18 @@ Message to be sent over the TCP or serial connection to the IPS receiver or USB 
 Raw messages received from the receiver or USB stick
 
 ##### Parameters:
-- ~host (string, default=None):  
+- ~type (string, default='tcp'):  
+'tcp' for TCP receiver or 'usb' for metraTec USB stick
+
+- ~host (string, default='192.168.2.223):  
 IP address of the connected receiver
 
-- ~port (with host: int, default=10001; without host: string, default=None):  
-Port for the TCP connection if '~host' parameter is present, otherwise specifies the USB port of the stick
+- ~port (with type='tcp': int, default=10001; with type='usb': string, default='/dev/ttyUSB0):  
+Port for the TCP connection if '~type' parameter is set to 'tcp', otherwise specifies the USB port of the stick
 
 - ~baudrate (int, default=115200):  
 Baudrate to use for serial communication with USB receiver
-
+        
 #### positioning.py (IPS)
 Use this node to perform indoor zone location using the metraTec IPS tracking system. Prerequisites for using this node
 is a running receiver-node that handles communication with the receiver and thus with the beacons in the vicinity.
@@ -153,12 +156,13 @@ Coordinate frame the receiver position should be estimated in
 The publishing rate in messages per second
 
 - ~bcn_len (int, default=2*number_of_beacons):  
-Buffer length for BCN messages
+Buffer length for BCN messages. Defaults to twice the number of beacons defined in the config file.
+You might need to increase this if there are a lot of unused/undefined beacons that are pinging on the same SID/channel.
 
 - ~srg_len (int, default=number_of_beacons):  
 Buffer length for SRG messages
 
-- ~min_beacons (int, default=4):  
+- ~min_beacons (int, default=3):  
 Minimum number of beacons to be used for UWB ranging. Should be 3 (two possible points) or 4
 
 - ~max_beacons (int, default=6):  
@@ -169,6 +173,10 @@ Minimum RSSI value a beacon should have to be used for ranging. Default uses all
 
 - ~max_z (double, default=None):  
 Maximum z-coordinate the receiver should have after ranging. Used as bounds for trilateration.
+
+- ~dilation (double, default=0.0):  
+Only position estimates within a dilated convex hull around the beacons used for ranging are published to
+minimize errors and improve accuracy. This is the dilation distance in m.
 
 #### ips_map.py
 This node publishes tf transforms between the frame_id set in the config file and the beacon positions in that zone.

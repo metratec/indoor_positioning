@@ -15,6 +15,8 @@ A few examples can be found in the main function below.
 import math
 import operator
 from scipy.optimize import minimize
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
 from positioning import Positioning
 
 
@@ -25,7 +27,7 @@ class PositioningPlus(Positioning):
     minimization_params = dict(method='TNC',  # L-BFGS-B, TNC or SLSQP
                                options={'disp': True})
 
-    def __init__(self, config_dir, min_beacons=4, max_z=None):
+    def __init__(self, config_dir, min_beacons=4, max_z=None, dilation=0.0):
         """
         Initialize the class with zone and beacon definitions from YAML configuration file.
         :param config_dir: String: Directory of the YAML config file
@@ -43,6 +45,9 @@ class PositioningPlus(Positioning):
 
         # maximum z value the position estimate can have (used as initialization and upper bound for trilateration)
         self.max_z = max_z
+
+        # dilation for the polygon check
+        self.dilation = dilation
 
     def get_top_beacons(self, pings, n):
         """
@@ -128,14 +133,15 @@ class PositioningPlus(Positioning):
         # check whether enough points are given
         if len(ranges) < self.min_beacons:
             print('Not enough beacons for position estimation ({}/{})'.format(len(ranges), self.min_beacons))
-            return None
+            return False, None
         print('Using {} beacons for trilateration.'.format(len(ranges)))
         # get points and distances from input and compute sum of distances
-        points, distances, dsum = [], [], 0
+        points, poly_points, distances, dsum = [], [], [], 0
         for r in ranges:
             # get position of beacon directly from input list or alternatively from Beacon object
             p = r[0].position if r[0].__class__.__name__ == 'Beacon' else r[0]
             points.append(p)
+            poly_points.append((p[0], p[1]))
             distances.append(r[1])
             dsum += r[1]
         # get weighted centroid
@@ -152,7 +158,9 @@ class PositioningPlus(Positioning):
         bnds = ((None, None), (None, None), (None, self.max_z)) if self.max_z is not None else None
         res = minimize(self.mse, initial, args=(points, distances), bounds=bnds, **self.minimization_params)
         print('final: ', res.x)
-        return res.x
+        # check if result is within bounds
+        poly = Polygon(poly_points)
+        return poly.convex_hull.buffer(self.dilation).contains(Point(res.x[0], res.x[1])), res.x
 
     @staticmethod
     def mse(x, points, distances):

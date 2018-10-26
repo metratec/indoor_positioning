@@ -1,41 +1,54 @@
 <launch>
 
-    <!-- Arguments that can be passed via command line remapping or in another launch file -->
-    <arg name="rec_name" default="host" />
-    <arg name="rec_value" default="192.168.2.223" />
+    <!--
+    Arguments that can be passed via command line remapping or in another launch file.
+    For type 'tcp' an IP address of the receiver is required (e.g. 'host:=192.168.2.223'),
+    for type 'usb' the connection port is required (e.g. 'port:=/dev/ttyUSB0').
+    -->
+    <arg name="type" default="tcp" />
+    <arg name="host" default="192.168.2.223" />
+    <arg name="port" default="10001" />
+    <arg name="baudrate" default="115200" />
 
-    <arg name="config_dir" default="config/zones.yml" />
+    <arg name="config_file" default="config/zones.yml" />
+    <arg name="frame_id" default="map" />
+    <arg name="rate" default="0.1" />
+    <arg name="bcn_len" default="-1" />
+    <arg name="srg_len" default="-1" />
+    <arg name="min_beacons" default="3" />
+    <arg name="max_beacons" default="6" />
+    <arg name="rssi_thresh" default="-127" />
+    <arg name="max_z" default="1" />
+    <arg name="dilation" default="0" />
+
     <arg name="do_vis" default="False" />
 
     <!--
     Launch the IPS receiver node that publishes its raw data to the ips/receiver/raw topic.
     Use "host" and optionally "port" for a receiver connected via TCP.
     Use "port" and optionally "baudrate" for a mobile receiver directly connected via USB.
-    Parameters:
-        <param name="host" type="string" value="192.168.2.223"/>
-        <param name="port" type="string" value="/dev/ttyUSB0"/>
-        <param name="port" type="int" value="10001"/>
-        <param name="baudrate" type="int" value="115200"/>
     -->
     <node pkg="indoor_positioning" name="receiver" type="receiver.py" clear_params="True" >
-       <param name="$(arg rec_name)" value="$(arg rec_value)" />
+        <param name="type" type="string" value="$(arg type)" />
+        <param name="host" type="string" value="$(arg host)"/>
+        <param name="port" type="string" value="$(arg port)"/>
+        <param name="baudrate" type="int" value="$(arg baudrate)"/>
     </node>
 
     <!--
     Launch IPS+ node for UWB position estimation.
-    Parameters:
-        <param name="config_file" type="string" value="config/zones.yml" />
-        <param name="frame_id" type="string" value="map" />
-        <param name="rate" type="double" value="0.1" />
-        <param name="bcn_len" type="int" value="12" />
-        <param name="srg_len" type="int" value="4" />
-        <param name="min_beacons" type="int" value="3" />
-        <param name="max_beacon" type="int" value="6" />
-        <param name="rssi_thresh" type="int" value="-127" />
-        <param name="max_z" type="double" value="1" />
     -->
     <node pkg="indoor_positioning" name="positioning_plus" type="positioning_plus.py" output="screen" >
-        <param name="config_file" type="string" value="$(arg config_dir)" />
+        <param name="config_file" type="string" value="$(arg config_file)" />
+        <param name="frame_id" type="string" value="$(arg frame_id)" />
+        <param name="rate" type="double" value="$(arg rate)" />
+        <param name="bcn_len" type="int" value="$(arg bcn_len)" />
+        <param name="srg_len" type="int" value="$(arg srg_len)" />
+        <param name="min_beacons" type="int" value="$(arg min_beacons)" />
+        <param name="max_beacons" type="int" value="$(arg max_beacons)" />
+        <param name="rssi_thresh" type="int" value="$(arg rssi_thresh)" />
+        <param name="max_z" type="double" value="$(arg max_z)" />
+        <param name="dilation" type="double" value="$(arg dilation)" />
     </node>
 
     <!--

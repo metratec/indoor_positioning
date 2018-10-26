@@ -1,35 +1,38 @@
 <launch>
 
-    <!-- Arguments that can be passed via command line remapping or in another launch file -->
-    <arg name="rec_name" default="port" />
-    <arg name="rec_value" default="/dev/ttyUSB0" />
+    <!--
+    Arguments that can be passed via command line remapping or in another launch file.
+    For type 'tcp' an IP address of the receiver is required (e.g. 'host:=192.168.2.223'),
+    for type 'usb' the connection port is required (e.g. 'port:=/dev/ttyUSB0').
+    -->
+    <arg name="type" default="usb" />
+    <arg name="host" default="192.168.2.223" />
+    <arg name="port" default="/dev/ttyUSB0" />
+    <arg name="baudrate" default="115200" />
 
-    <arg name="config_dir" default="config/zones.yml" />
+    <arg name="config_file" default="config/zones.yml" />
+    <arg name="rate" default="1" />
+    <arg name="bcn_len" default="-1" />
+
     <arg name="do_vis" default="False" />
 
     <!--
     Launch the IPS receiver node that publishes its raw data to the ips/receiver/raw topic.
     Use "host" and optionally "port" for a receiver connected via TCP.
     Use "port" and optionally "baudrate" for a mobile receiver directly connected via USB.
-    Parameters:
-        <param name="host" type="string" value="192.168.2.223"/>
-        <param name="port" type="string" value="/dev/ttyUSB0"/>
-        <param name="port" type="int" value="10001"/>
-        <param name="baudrate" type="int" value="115200"/>
     -->
     <node pkg="indoor_positioning" name="receiver" type="receiver.py" clear_params="True" >
-       <param name="$(arg rec_name)" value="$(arg rec_value)" />
+        <param name="type" type="string" value="$(arg type)" />
+        <param name="host" type="string" value="$(arg host)"/>
+        <param name="port" type="string" value="$(arg port)"/>
+        <param name="baudrate" type="int" value="$(arg baudrate)"/>
     </node>
 
-    <!--
-    Launch IPS node for zone location
-    Parameters:
-        <param name="config_file" type="string" value="config/zones.yml" />
-        <param name="rate" type="double" value="1" />
-        <param name="bcn_len" type="int" value="6" />
-    -->
+    <!-- Launch IPS node for zone location -->
     <node pkg="indoor_positioning" name="positioning" type="positioning.py" output="screen" >
         <param name="config_file" type="string" value="$(arg config_dir)" />
+        <param name="rate" type="double" value="$(arg rate)" />
+        <param name="bcn_len" type="int" value="$(arg bcn_len)" />
     </node>
 
     <!--

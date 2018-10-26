@@ -6,3 +6,4 @@ rospkg>=1.1.4
 pyserial>=3.4
 tf>=1.0.0
 PyYAML>=3.12
+Shapely>=1.6.4.post2

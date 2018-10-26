@@ -26,7 +26,7 @@ Parameters:
         Buffer length for BCN messages
     - ~srg_len (int, default=number_of_beacons):
         Buffer length for SRG messages
-    - ~min_beacons (int, default=4):
+    - ~min_beacons (int, default=3):
         Minimum number of beacons to be used for UWB ranging. Should be 3 (two possible points) or 4
     - ~max_beacons (int, default=6):
         Maximum number of beacons to be used for UWB ranging. Higher values lead to higher computation time.
@@ -34,6 +34,9 @@ Parameters:
         Minimum RSSI value a beacon should have to be used for ranging. Default uses all beacons.
     - ~max_z (double, default=None):
         Maximum z-coordinate the receiver should have after ranging. Used as bounds for trilateration.
+    - ~dilation (double, default=0.0):
+        Only position estimates within a dilated convex hull around the beacons used for ranging are published to
+        minimize errors and improve accuracy. This is the dilation distance in m.
 """
 
 import os
@@ -68,8 +71,10 @@ class IPSplus:
         self.rssi_thresh = rospy.get_param('~rssi_thresh') if rospy.has_param('~rssi_thresh') else -127
         # get maximum z position the receiver can have
         max_z = rospy.get_param('~max_z') if rospy.has_param('~max_z') else None
+        # Expansion (in m) for polygon connecting the beacons that are used for ranging
+        dilation = rospy.get_param('~dilation') if rospy.has_param('~dilation') else 0.0
         # initialize positioning class
-        self.positioning = PositioningPlus(abs_dir, min_beacons=min_beacons, max_z=max_z)
+        self.positioning = PositioningPlus(abs_dir, min_beacons=min_beacons, max_z=max_z, dilation=dilation)
         # get number of beacons specified in zones.yml file for default buffer values
         n_beacons = self.positioning.n_beacons
 
@@ -82,6 +87,7 @@ class IPSplus:
 
         # number of messages to keep
         self.bcn_buffer_length = rospy.get_param('~bcn_len') if rospy.has_param('~bcn_len') else 2*n_beacons
+        self.bcn_buffer_length = 2*n_beacons if self.bcn_buffer_length == -1 else self.bcn_buffer_length
         # list of incoming messages
         self.bcn_buffer = []
         # timestamp from last received message
@@ -89,6 +95,7 @@ class IPSplus:
 
         # number of messages to keep
         self.srg_buffer_length = rospy.get_param('~srg_len') if rospy.has_param('srg_len') else n_beacons
+        self.srg_buffer_length = n_beacons if self.srg_buffer_length == -1 else self.srg_buffer_length
         # list of incoming messages
         self.srg_buffer = []
         # timestamp from last received message
@@ -200,11 +207,12 @@ class IPSplus:
                 else:
                     transformed_ranges.append((r[0].position, r[1]))
             # estimate position
-            position = self.positioning.trilaterate(transformed_ranges)
+            ret, position = self.positioning.trilaterate(transformed_ranges)
             # clear SRG message buffer
             self.srg_buffer = []
             # return estimated position
-            return position
+            print('Trilateration in Polygon: ' + str(ret))
+            return position if ret else None
 
 
 if __name__ == '__main__':
